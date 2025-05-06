@@ -17,6 +17,8 @@
         <select
           v-model="selectedCountryCode"
           aria-label="Country Code"
+          :name="selectElementName"
+          :id="selectElementId"
           class="appearance-none bg-transparent h-full pr-8 text-zinc-700 focus:outline-none cursor-pointer py-2 text-sm"
         >
           <option
@@ -58,6 +60,8 @@
       aria-label="Phone Number"
       pattern="[0-9]*"
       maxlength="10"
+      :id="$attrs.id  as string | undefined"
+      :name="$attrs.name as string | undefined"
       class="flex-grow p-2 text-zinc-900 focus:outline-none text-sm"
     />
   </div>
@@ -76,6 +80,10 @@ interface Country {
 // These will be bound to v-model:countryCode and v-model:phoneNumber in the parent
 const selectedCountryCode = defineModel<string>("countryCode");
 const phoneNumberInput = defineModel<string>("phoneNumber");
+defineProps<{
+  selectElementId: string;
+  selectElementName: string;
+}>();
 
 // Data for Arabian countries (add more as needed)
 const countries = ref<Country[]>([

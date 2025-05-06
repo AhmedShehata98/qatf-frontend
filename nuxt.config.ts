@@ -1,10 +1,15 @@
 import tailwindcss from "@tailwindcss/vite";
 
+const directusDomain = process.env.DIRECTUS_URL
+  ? new URL(process.env.DIRECTUS_URL).host
+  : "";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: "2024-11-01",
   devtools: { enabled: true },
   modules: ["@nuxt/eslint", "@nuxt/fonts", "@nuxt/image"],
+  plugins: [{ src: "~/plugins/directus.ts", mode: "all" }],
   css: ["~/assets/css/main.css"],
   app: {
     head: {
@@ -22,6 +27,16 @@ export default defineNuxtConfig({
         },
         { name: "format-detection", content: "telephone=no" },
       ],
+    },
+  },
+  runtimeConfig: {
+    public: {
+      directusUrl: process.env.DIRECTUS_URL,
+    },
+  },
+  image: {
+    directus: {
+      baseURL: `${process.env.DIRECTUS_URL}/assets` || "",
     },
   },
   vite: {

@@ -4,24 +4,26 @@
       <p
         class="relative w-fit text-secondary text-base md:text-xs font-bold text-start before:absolute before:bottom-0 before:left-0 before:w-full before:rounded-full before:h-1/2 before:bg-gradient-to-t px-2 py-1 before:from-secondary/60 isolate"
       >
-        ابدأ معنا الآن, بانتظار رسالتك
+        {{ data?.contactUs.headingTitle }}
       </p>
       <h3
         class="text-[44px] md:text-[64px] font-semibold text-black leading-snug"
       >
-        تواصل معنا. نحن هنا لمساعدتك.
+        {{ data?.contactUs.description }}
       </h3>
       <ul
+        v-if="socialMedia?.socialMedia"
         class="flex md:flex-col gap-4 md:absolute max-md:self-center max-md:mt-6 left-2"
       >
-        <li>
-          <img src="/icons/shared/fill-fb.svg" alt="fill-fb.svg" />
-        </li>
-        <li>
-          <img src="/icons/shared/fill-telegram.svg" alt="fill-telegram.svg" />
-        </li>
-        <li>
-          <img src="/icons/shared/fill-twitter.svg" alt="fill-twitter.svg" />
+        <li v-for="platform of socialMedia.socialMedia" :key="platform.id">
+          <NuxtLink :href="platform.platformUrl" target="_blank">
+            <nuxt-img
+              provider="directus"
+              :src="platform.icon"
+              :alt="`platform-${platform.id}`"
+              class="size-10"
+            />
+          </NuxtLink>
         </li>
       </ul>
     </span>
@@ -30,9 +32,9 @@
         class="w-full sm:w-[calc(50%-1.5rem)] flex items-center justify-between gap-5 overflow-hidden flex-wrap"
       >
         <div class="w-full flex flex-col gap-2">
-          <label for="company-name" class="text-[14px] font-semibold"
-            >اسم الشركة او المؤسسة</label
-          >
+          <label for="company-name" class="text-[14px] font-semibold">{{
+            data?.contactUs.companyNameLabel
+          }}</label>
           <input
             type="text"
             id="company-name"
@@ -45,7 +47,9 @@
           }}</span>
         </div>
         <div class="w-full flex flex-col gap-2">
-          <label for="email" class="text-[14px] font-semibold">الإيميل</label>
+          <label for="email" class="text-[14px] font-semibold">
+            {{ data?.contactUs.emailLabel }}</label
+          >
           <input
             type="email"
             id="email"
@@ -58,9 +62,16 @@
           }}</span>
         </div>
         <div class="w-full flex flex-col gap-2">
+          <label for="phone-number" class="text-[14px] font-semibold">
+            {{ data?.contactUs.phoneNumberLabel }}
+          </label>
           <phone-input
+            id="phone-number"
             v-model:country-code="countryCode"
             v-model:phone-number="phoneNumber"
+            name="phone-number"
+            select-element-id="country-code"
+            select-element-name="country-code"
           />
           <span v-if="form.phone" class="text-red-500 text-xs">{{
             "يجب أن يكون رقم الهاتف مكونًا من 10 أرقام"
@@ -68,7 +79,9 @@
         </div>
       </div>
       <div class="w-full sm:w-[calc(50%-1.5rem)] flex flex-col gap-2">
-        <label for="message" class="text-[14px] font-semibold">رسالتك</label>
+        <label for="message" class="text-[14px] font-semibold">{{
+          data?.contactUs.messageLabel
+        }}</label>
         <textarea
           id="message"
           name="message"
@@ -84,12 +97,15 @@
         type="submit"
         class="w-full sm:w-[calc(50%-1.5rem)] text-white px-4 py-2 rounded-lg mt-4 bg-black"
       >
-        إرسال
+        {{ data?.contactUs.submitButton }}
       </button>
     </form>
   </section>
 </template>
 <script setup lang="ts">
+import { NuxtLink } from "#components";
+import { QUERY_KEYS } from "~/constants/query-keys";
+
 const form = reactive({
   companyName: "",
   email: "",
@@ -98,4 +114,38 @@ const form = reactive({
 });
 const countryCode = shallowRef("+966");
 const phoneNumber = shallowRef("");
+const { $directus } = useNuxtApp();
+const { data } = await useAsyncData(QUERY_KEYS.pages.contactUs, () =>
+  $directus.query(
+    `
+      query {
+        contactUs {
+          headingTitle
+          description
+          phoneNumberLabel
+          companyNameLabel
+          emailLabel
+          messageLabel
+          submitButton
+         
+        }
+      }
+    `
+  )
+);
+const { data: socialMedia } = await useAsyncData(
+  QUERY_KEYS.collections.socialMedia,
+  () =>
+    $directus.query(
+      `
+      query {
+        socialMedia {
+          id
+          icon
+          platformUrl
+        }
+      }
+    `
+    )
+);
 </script>

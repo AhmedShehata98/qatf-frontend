@@ -5,9 +5,10 @@
     >
       <!-- Logo -->
       <div>
-        <NuxtImg
-          src="icons/shared/logo-primary.svg"
-          alt="Qatf Farm Logo"
+        <nuxt-img
+          provider="directus"
+          :src="data?.appHeader.logo"
+          alt="logo"
           class="h-14 tablet:h-10"
         />
       </div>
@@ -17,20 +18,12 @@
         @click="isOpenMenu = !isOpenMenu"
         class="tablet:hidden"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-        >
-          <path
-            fill="none"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-width="1.5"
-            d="M20 7H4m16 5H4m16 5H4"
-          />
-        </svg>
+        <nuxt-img
+          provider="directus"
+          :src="data?.appHeader.openSideNaviationMenuIcon"
+          alt="open side navigation menu"
+          class="h-9"
+        />
       </button>
       <button
         v-if="isOpenMenu"
@@ -38,20 +31,15 @@
         @click="isOpenMenu = !isOpenMenu"
         class="tablet:hidden"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-        >
-          <path
-            fill="currentColor"
-            d="M18.3 5.71a.996.996 0 0 0-1.41 0L12 10.59L7.11 5.7A.996.996 0 1 0 5.7 7.11L10.59 12L5.7 16.89a.996.996 0 1 0 1.41 1.41L12 13.41l4.89 4.89a.996.996 0 1 0 1.41-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4"
-          />
-        </svg>
+        <nuxt-img
+          provider="directus"
+          :src="data?.appHeader.closeSideNaviationMenuIcon"
+          alt="close side navigation menu"
+          class="h-9"
+        />
       </button>
       <!-- Navigation -->
-      <nav class="hidden tablet:flex items-center gap-6 rtl:space-x-reverse">
+      <nav class="hidden tablet:flex items-center gap-2 rtl:space-x-reverse">
         <NuxtLink
           to="/"
           class="header__nav_link"
@@ -85,45 +73,29 @@
       </nav>
       <!-- Actions -->
       <div class="hidden tablet:flex items-center gap-4 rtl:space-x-reverse">
-        <NuxtLink
-          to="/cart"
-          class="bg-primary text-white p-2 rounded-full hover:bg-primary/90 transition-colors"
+        <button
+          type="button"
+          class="relative bg-primary text-white p-2 rounded-full hover:bg-primary/90 transition-colors"
+          @click="showModal"
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+          <p
+            v-show="getCartQuantity() > 0"
+            class="absolute -top-1.5 -right-3 size-5.5 bg-secondary rounded-full flex items-center justify-center text-xs p-1 text-white overflow-hidden shadow-md"
           >
-            <path
-              d="M7.00002 5.41602H13C15.8334 5.41602 16.1167 6.74101 16.3084 8.35768L17.0584 14.6077C17.3 16.6577 16.6667 18.3327 13.75 18.3327H6.25835C3.33335 18.3327 2.70002 16.6577 2.95002 14.6077L3.70003 8.35768C3.88336 6.74101 4.16669 5.41602 7.00002 5.41602Z"
-              stroke="white"
-              stroke-width="1.25"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M6.66602 6.66602V3.74935C6.66602 2.49935 7.49935 1.66602 8.74935 1.66602H11.2493C12.4993 1.66602 13.3327 2.49935 13.3327 3.74935V6.66602"
-              stroke="white"
-              stroke-width="1.25"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <path
-              d="M17.0077 14.1914H6.66602"
-              stroke="white"
-              stroke-width="1.25"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </NuxtLink>
+            {{ getCartQuantity() < 99 ? getCartQuantity() : "99+" }}
+          </p>
+          <nuxt-img
+            provider="directus"
+            :src="data?.appHeader.cartButtonIcon"
+            alt="open side navigation menu"
+            class="h-6"
+          />
+        </button>
         <NuxtLink
-          to="/contact-us"
+          :href="data?.appHeader.ctaButtonHref"
           class="px-5 py-2 border rounded-full border-black text-black hover:border-primary hover:text-primary transition-colors"
         >
-          تواصل معنا
+          {{ data?.appHeader.ctaButtonLabel }}
         </NuxtLink>
       </div>
 
@@ -132,7 +104,7 @@
         class="fixed top-17 left-0 z-[600] bg-background w-full min-h-screen flex items-start justify-start pt-8 transition-transform"
         :class="isOpenMenu ? 'translate-x-0' : 'translate-x-[150%]'"
       >
-        <nav class="w-full grid grid-flow-row h-full min-h-full">
+        <nav class="w-full grid grid-flow-row h-full gap-2 min-h-full">
           <NuxtLink
             to="/"
             class="header__nav_link"
@@ -162,15 +134,25 @@
             @click="isOpenMenu = !isOpenMenu"
             >تسعيرة اليوم</NuxtLink
           >
-          <NuxtLink
-            to="/cart"
-            class="header__nav_link"
-            :class="
-              $route.fullPath.endsWith('/cart') ? 'header__nav_link_active' : ''
+          <button
+            type="button"
+            class="px-3 py-2 flex flex-row items-center justify-start gap-6"
+            :class="isOpenModal ? 'header__nav_link_active' : ''"
+            @click="
+              () => {
+                showModal();
+                isOpenMenu = !isOpenMenu;
+              }
             "
-            @click="isOpenMenu = !isOpenMenu"
-            >السلة</NuxtLink
           >
+            <p>السلة</p>
+            <p
+              v-show="getCartQuantity() > 0"
+              class="size-6 bg-secondary rounded-sm flex items-center justify-center text-sm p-1 text-white overflow-hidden shadow-md"
+            >
+              {{ getCartQuantity() < 99 ? getCartQuantity() : "99+" }}
+            </p>
+          </button>
           <NuxtLink
             to="/contact-us"
             class="header__nav_link"
@@ -188,9 +170,31 @@
   </header>
 </template>
 <script setup lang="ts">
-const isOpenMenu = shallowRef(false);
+import { QUERY_KEYS } from "~/constants/query-keys";
 
-// Watch isOpenMenu changes to toggle body scroll
+const isOpenMenu = shallowRef(false);
+const { showModal, isOpenModal } = useShowCartModal();
+const { getCartQuantity } = useCart();
+const { $directus } = useNuxtApp();
+
+const { data, error } = await useAsyncData(
+  QUERY_KEYS.globalConfig.appHeader,
+  () =>
+    $directus.query(`
+    query {
+      appHeader {
+        id
+        logo
+        openSideNaviationMenuIcon
+        closeSideNaviationMenuIcon
+        cartButtonIcon
+        ctaButtonLabel
+        ctaButtonHref
+      }
+    }
+  `)
+);
+
 watch(isOpenMenu, (newValue) => {
   if (import.meta.client) {
     if (newValue) {
@@ -201,9 +205,8 @@ watch(isOpenMenu, (newValue) => {
   }
 });
 
-// Clean up on component unmount
 onUnmounted(() => {
-  if (process.client) {
+  if (import.meta.client) {
     document.body.style.overflow = "auto";
   }
 });
