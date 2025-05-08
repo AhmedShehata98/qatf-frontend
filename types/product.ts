@@ -40,9 +40,9 @@ export const unitMap: Record<ProductUnit, string> = {
   [ProductUnit.NET]: "شبكة",
 };
 export interface Product {
-  id: string;
+  id: number;
   title: string;
-  price: string;
+  price: number;
   image: string;
   currency: CurrencyEnum;
   unit: ProductUnit;

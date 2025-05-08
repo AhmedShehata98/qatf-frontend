@@ -6,7 +6,7 @@
     <cart-modal
       :is-open="isOpenModal"
       :cart="cart"
-      :totalPrice="getCartTotalPrice()"
+      :total-price="totalPrice"
       @close-modal="closeModal"
       @increase-quantity="increaseItemQuantity"
       @decrease-quantity="decreaseItemQuantity"
@@ -18,9 +18,9 @@
 const { closeModal, isOpenModal } = useShowCartModal();
 const {
   cart,
+  totalPrice,
   increaseItemQuantity,
   decreaseItemQuantity,
   removeFromCart,
-  getCartTotalPrice,
 } = useCart();
 </script>

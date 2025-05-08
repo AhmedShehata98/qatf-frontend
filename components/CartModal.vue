@@ -142,14 +142,37 @@
       <button
         type="button"
         @click="handleSubmit"
-        class="bg-secondary rounded-full py-2 px-5 w-full text-white mt-8"
+        class="flex items-center justify-center gap-2.5 bg-secondary rounded-full py-2 px-5 w-full text-white mt-8 disabled:bg-slate-400"
+        :disabled="isLoading || isError"
+        v-if="!isSuccess || !isError"
       >
-        {{ data?.productsPricing.modalSubmitButton }}
+        <span
+          v-if="isLoading"
+          class="flex border-4 size-8 rounded-full border-slate-600 border-r-transparent animate-spin"
+        ></span>
+        <p v-if="!isLoading">
+          {{ data?.productsPricing.modalSubmitButton }}
+        </p>
+      </button>
+      <button
+        v-if="isSuccess"
+        type="button"
+        class="rounded-full py-2 px-5 w-full text-white mt-8 bg-emerald-600"
+      >
+        لقد تم اضافة عناصر السلة بنجاح
+      </button>
+      <button
+        v-if="isError"
+        type="button"
+        class="rounded-full truncate overflow-hidden max-w-full py-2 px-5 w-full text-white mt-8 bg-red-600"
+      >
+        {{ errorMsg }}
       </button>
     </div>
   </Modal>
 </template>
 <script setup lang="ts">
+import { createDirectus, createItem, rest, withToken } from "@directus/sdk";
 import { QUERY_KEYS } from "~/constants/query-keys";
 import type { CartType } from "~/types/cart";
 
@@ -166,6 +189,10 @@ const props = defineProps<{
 }>();
 
 const { $directus } = useNuxtApp();
+const isError = ref<boolean>(false);
+const isLoading = ref<boolean>(false);
+const isSuccess = ref<boolean>(false);
+const errorMsg = ref<null | string>(null);
 const form = reactive({
   companyName: "",
   phone: "",
@@ -179,6 +206,7 @@ const touched = reactive({
   activity: false,
   isOrderedBefore: false,
 });
+const { clearCart } = useCart();
 const { data, error } = await useAsyncData(QUERY_KEYS.pages.cartContent, () =>
   $directus.query(
     `
@@ -197,31 +225,138 @@ const { data, error } = await useAsyncData(QUERY_KEYS.pages.cartContent, () =>
   )
 );
 
-const handleSubmit = () => {
-  console.log({ form, cart: props.cart });
-
-  // Directus steps
-  // 1. create cart collection
-  // 2. cart collection fields will be (id, orderId[uuid], items[relation=> product] + quantity[number]
-  //    totalPrice[number], status[in-process,in-the-way ,shipped , completed], isPaid[bool],
-  //  companyName[string], phoneNumber[string], isOrderedBefore[bool], activity[string] )
-
-  // Front-end steps
-  // 1. collect form data ,schema will be ( companyName[string], phoneNumber[string],
-  //    isOrderedBefore[bool], activity[string] )
-  // 2. collect product ids data ,schema will be ( [{productId: number, quantity: number}])
-  // 3. send data to back-end (directus) ,schema will be (
-  //    orderId[uuid],
-  //    items: [{productId: number, quantity: number}]
-  //    totalPrice: number,
-  //    status : "in-process",
-  //    isPaid: false,
-  //    companyName: string ,
-  //    phoneNumber : string ,
-  //    isOrderedBefore: bool,
-  //    activity: string
-  // )
-  // 3. send post request to to api [:/products] to decrement (stock) field
-  // for each product with (product id) based on cart item quantity ( current product stock - quantity )
+const resetForm = () => {
+  form.companyName = "";
+  form.phone = "";
+  form.countryCode = "+966";
+  form.activity = "";
+  form.isOrderedBefore = false;
+  touched.companyName = false;
+  touched.phone = false;
+  touched.activity = false;
+  touched.isOrderedBefore = false;
 };
+
+const handleSubmit = async () => {
+  console.log({ form, cart: props.cart });
+  try {
+    const items = props.cart;
+    isLoading.value = true;
+    const cart = await createCart();
+    isLoading.value = false;
+    if (!cart) {
+      console.log("create cart failed");
+      return;
+    }
+    console.log("created cart");
+    items.forEach(async (item) => {
+      isLoading.value = true;
+      if (!item.id) {
+        console.log("cart item has no id");
+        return;
+      }
+      const createdItem = await createCartItem({
+        cartId: cart.id,
+        productId: item.id,
+        quantity: item.quantity,
+      });
+    });
+    isLoading.value = false;
+    isSuccess.value = true;
+    resetForm();
+    clearCart();
+  } catch (error) {
+    isError.value = true;
+    isSuccess.value = false;
+    errorMsg.value = error.message;
+    isLoading.value = false;
+    if (import.meta.dev) {
+      console.log(error);
+    } else {
+      console.error("create cart failed");
+    }
+  }
+};
+
+// 1. create function to calculate total price [GET /api/cart]
+function calculateTotalPrice(cart: CartType[]) {
+  if (!cart || cart.length === 0)
+    throw new Error("Provider cart items to calc total price !");
+
+  const totalPrice = cart.reduce(
+    (acc, item) => (acc += item.price * item.quantity),
+    0
+  );
+
+  return totalPrice;
+}
+// 2. create function to send create cart request with (orderId:uuid, user-info ,isPaid=false
+async function createCart() {
+  try {
+    const directus = createDirectus(useRuntimeConfig().public.directusUrl).with(
+      rest()
+    );
+
+    const totalPrice = calculateTotalPrice(props.cart);
+    const orderId = crypto.randomUUID();
+    const userInfo = {
+      companyName: form.companyName,
+      phoneNumber: `${form.countryCode}${form.phone}`,
+      activity: form.activity,
+      isOrderedBefore: form.isOrderedBefore,
+    };
+    const isPaid = false;
+    const orderStatus = "in-process";
+
+    const cart = {
+      orderId,
+      ...userInfo,
+      isPaid,
+      orderStatus,
+      totalPrice,
+    };
+
+    const res = await directus.request(
+      withToken(
+        useRuntimeConfig().public.directusAccessToken,
+        createItem("cart", cart)
+      )
+    );
+
+    return res;
+  } catch (error) {
+    if (import.meta.dev) {
+      console.log(error);
+    } else {
+      console.error("create cart failed");
+    }
+  }
+}
+async function createCartItem(cartItem: {
+  cartId: number;
+  productId: number;
+  quantity: number;
+}) {
+  try {
+    const directus = createDirectus(useRuntimeConfig().public.directusUrl).with(
+      rest()
+    );
+
+    const res = await directus.request(
+      withToken(
+        useRuntimeConfig().public.directusAccessToken,
+        createItem("cart_items", cartItem)
+      )
+    );
+    return res;
+  } catch (error) {
+    if (import.meta.dev) {
+      console.log(error);
+    } else {
+      console.error("create cart item failed");
+    }
+  }
+}
+//    orderStatus=is-process ,totalPrice ) [POST /api/cart]
+// 3. create function to send create cartItem request with (cartId:int ,productId:id,quantity) [POST /api/cart_items]
 </script>
