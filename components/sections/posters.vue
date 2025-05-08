@@ -1,9 +1,9 @@
 <template>
   <ul
-    class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6 app-container mt-14"
+    class="flex items-center justify-between gap-6 app-container mt-14 max-lg:flex-wrap"
   >
     <li
-      class="overflow-hidden px-6 flex items-center justify-center bg-[#F4F6F9] h-64 rounded-full"
+      class="overflow-hidden px-8 lg:px-6 flex items-center justify-center bg-[#F4F6F9] h-[13rem] md:h-[32rem] lg:h-64 w-[calc(50%-1.5rem)] min-w-36 xl:min-w-40 rounded-full"
     >
       <NuxtImg
         :src="
@@ -12,11 +12,11 @@
           })
         "
         :alt="posters?.home.posterFarStartImage"
-        class="max-w-full object-cover"
+        class="w-full object-cover"
       />
     </li>
     <li
-      class="overflow-hidden px-6 flex items-center justify-center bg-[#F4F6F9] h-64 rounded-full"
+      class="overflow-hidden px-8 lg:px-6 flex items-center justify-center bg-[#F4F6F9] h-[13rem] md:h-[32rem] lg:h-64 w-[calc(50%-1.5rem)] min-w-36 xl:min-w-40 rounded-full"
     >
       <NuxtImg
         :src="
@@ -25,11 +25,11 @@
           })
         "
         :alt="posters?.home.posterFarSecondImage"
-        class="max-w-full object-cover"
+        class="w-full object-cover"
       />
     </li>
     <li
-      class="overflow-hidden px-6 flex items-center justify-center max-md:h-48 h-64 col-span-2 rounded-full"
+      class="overflow-hidden px-6 flex items-center justify-center max-md:h-48 h-64 col-span-2"
     >
       <NuxtImg
         :src="
@@ -38,11 +38,11 @@
           })
         "
         :alt="posters?.home.posterCenterdImage"
-        class="max-w-full object-cover"
+        class="w-full object-cover"
       />
     </li>
     <li
-      class="overflow-hidden px-6 flex items-center justify-center bg-[#F4F6F9] h-64 rounded-full"
+      class="overflow-hidden px-8 lg:px-6 flex items-center justify-center bg-[#F4F6F9] h-[13rem] md:h-[32rem] lg:h-64 w-[calc(50%-1.5rem)] min-w-36 xl:min-w-40 rounded-full"
     >
       <NuxtImg
         :src="
@@ -51,11 +51,11 @@
           })
         "
         :alt="posters?.home.posterSecondEndImage"
-        class="max-w-full object-cover"
+        class="w-full object-cover"
       />
     </li>
     <li
-      class="overflow-hidden px-6 flex items-center justify-center bg-[#F4F6F9] h-64 rounded-full"
+      class="overflow-hidden px-8 lg:px-6 flex items-center justify-center bg-[#F4F6F9] h-[13rem] md:h-[32rem] lg:h-64 w-[calc(50%-1.5rem)] min-w-36 xl:min-w-40 rounded-full"
     >
       <NuxtImg
         :src="
@@ -64,7 +64,7 @@
           })
         "
         :alt="posters?.home.posterFarEndImage"
-        class="max-w-full object-cover"
+        class="w-full object-cover"
       />
     </li>
   </ul>

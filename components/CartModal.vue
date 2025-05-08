@@ -28,7 +28,7 @@
       </span>
       <form
         action=""
-        class="w-full grid grid-cols-1 items-end justify-start sm:grid-cols-2 gap-4"
+        class="w-full grid grid-cols-1 items-start justify-start sm:grid-cols-2 gap-4"
       >
         <div class="w-full flex flex-col gap-2">
           <label for="company-name" class="text-[14px] font-semibold">{{
@@ -40,12 +40,17 @@
             name="company-name"
             class="border border-gray-300 rounded-lg p-2"
             v-model="form.companyName"
+            @blur="touched.companyName = true"
           />
-          <span v-if="!form.companyName" class="text-red-500 text-xs">{{
-            "يجب أن يكون اسم الشركة أو المؤسسة مكونًا من حرفًا واحدًا على الأقل"
-          }}</span>
+          <span
+            v-if="!form.companyName && touched.companyName"
+            class="text-red-500 text-xs"
+            >{{
+              "يجب أن يكون اسم الشركة أو المؤسسة مكونًا من حرفًا واحدًا على الأقل"
+            }}</span
+          >
         </div>
-        <div class="w-full flex flex-col items-start justify-start gap-2">
+        <div class="w-full flex flex-col gap-2">
           <label
             for="phone-number"
             class="text-[14px] font-semibold text-start"
@@ -60,10 +65,13 @@
             select-element-id="country-code"
             select-element-name="country-code"
             class="py-0.5 w-full"
+            @blur="touched.phone = true"
           />
-          <span v-if="!form.phone" class="text-red-500 text-xs">{{
-            "يجب أن يكون رقم الهاتف مكونًا من 10 أرقام"
-          }}</span>
+          <span
+            v-if="!form.phone && touched.phone"
+            class="text-red-500 text-xs"
+            >{{ "يجب أن يكون رقم الهاتف مكونًا من 10 أرقام" }}</span
+          >
         </div>
         <div class="w-full flex flex-col gap-2">
           <label for="is-order-before" class="text-[14px] font-semibold">
@@ -74,13 +82,16 @@
             name="is-order-before"
             class="border border-gray-300 rounded-lg py-1 px-2"
             v-model="form.isOrderedBefore"
+            @blur="touched.isOrderedBefore = true"
           >
             <option value="false">لا</option>
             <option value="true">نعم</option>
           </select>
-          <span v-if="!form.isOrderedBefore" class="text-red-500 text-xs">{{
-            "يجب اختيار إجابة صالحة"
-          }}</span>
+          <span
+            v-if="!form.isOrderedBefore && touched.isOrderedBefore"
+            class="text-red-500 text-xs"
+            >{{ "يجب اختيار إجابة صالحة" }}</span
+          >
         </div>
         <div class="w-full flex flex-col gap-2">
           <label for="activity" class="text-[14px] font-semibold">{{
@@ -92,10 +103,13 @@
             name="activity"
             class="border border-gray-300 rounded-lg p-2"
             v-model="form.activity"
+            @blur="touched.activity = true"
           />
-          <span v-if="!form.activity" class="text-red-500 text-xs">{{
-            "يجب أن يكون النشاط مكونًا من حرفًا واحدًا على الأقل"
-          }}</span>
+          <span
+            v-if="!form.activity && touched.activity"
+            class="text-red-500 text-xs"
+            >{{ "يجب أن يكون النشاط مكونًا من حرفًا واحدًا على الأقل" }}</span
+          >
         </div>
       </form>
       <ul
@@ -115,7 +129,6 @@
       >
         <p>{{ data?.productsPricing.modalTotalLabel }}</p>
         <span class="flex items-center justify-center gap-6">
-          <p>1 طن + 5 كيلو</p>
           <p>
             {{
               Intl.NumberFormat("ar-SA", {
@@ -160,6 +173,12 @@ const form = reactive({
   activity: "",
   isOrderedBefore: false,
 });
+const touched = reactive({
+  companyName: false,
+  phone: false,
+  activity: false,
+  isOrderedBefore: false,
+});
 const { data, error } = await useAsyncData(QUERY_KEYS.pages.cartContent, () =>
   $directus.query(
     `
@@ -180,5 +199,29 @@ const { data, error } = await useAsyncData(QUERY_KEYS.pages.cartContent, () =>
 
 const handleSubmit = () => {
   console.log({ form, cart: props.cart });
+
+  // Directus steps
+  // 1. create cart collection
+  // 2. cart collection fields will be (id, orderId[uuid], items[relation=> product] + quantity[number]
+  //    totalPrice[number], status[in-process,in-the-way ,shipped , completed], isPaid[bool],
+  //  companyName[string], phoneNumber[string], isOrderedBefore[bool], activity[string] )
+
+  // Front-end steps
+  // 1. collect form data ,schema will be ( companyName[string], phoneNumber[string],
+  //    isOrderedBefore[bool], activity[string] )
+  // 2. collect product ids data ,schema will be ( [{productId: number, quantity: number}])
+  // 3. send data to back-end (directus) ,schema will be (
+  //    orderId[uuid],
+  //    items: [{productId: number, quantity: number}]
+  //    totalPrice: number,
+  //    status : "in-process",
+  //    isPaid: false,
+  //    companyName: string ,
+  //    phoneNumber : string ,
+  //    isOrderedBefore: bool,
+  //    activity: string
+  // )
+  // 3. send post request to to api [:/products] to decrement (stock) field
+  // for each product with (product id) based on cart item quantity ( current product stock - quantity )
 };
 </script>

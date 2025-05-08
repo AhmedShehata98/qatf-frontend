@@ -32,9 +32,7 @@
         </select>
       </div>
 
-      <div
-        class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none"
-      >
+      <div class="inset-y-0 right-0 flex items-center px-2 pointer-events-none">
         <svg
           class="w-4 h-4 text-gray-500"
           fill="none"
@@ -58,32 +56,34 @@
       type="tel"
       placeholder="Phone Number"
       aria-label="Phone Number"
-      pattern="[0-9]*"
       maxlength="10"
-      :id="$attrs.id  as string | undefined"
+      :id="$attrs.id as string | undefined"
       :name="$attrs.name as string | undefined"
-      class="flex-grow p-2 text-zinc-900 focus:outline-none text-sm"
+      class="w-[inherit] p-2 text-zinc-900 focus:outline-none text-sm"
+      @blur="($event: FocusEvent) => attrs.onBlur?.($event)"
     />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from "vue"; // Import computed
-interface Country {
+type Country = {
   name: string;
   code: string; // Dialing code e.g. +966
   iso: string; // ISO 3166-1 alpha-2 e.g. SA
   flag: string;
-}
+};
 
 // Define models for country code and phone number
 // These will be bound to v-model:countryCode and v-model:phoneNumber in the parent
 const selectedCountryCode = defineModel<string>("countryCode");
 const phoneNumberInput = defineModel<string>("phoneNumber");
-defineProps<{
+const props = defineProps<{
   selectElementId: string;
   selectElementName: string;
 }>();
+
+const attrs = useAttrs();
 
 // Data for Arabian countries (add more as needed)
 const countries = ref<Country[]>([
@@ -168,7 +168,7 @@ const selectedCountry = computed(() => {
 } */
 
 .custom-select {
-  min-width: 4rem;
+  min-width: 3rem;
   position: relative;
 }
 
@@ -176,7 +176,7 @@ const selectedCountry = computed(() => {
   appearance: none;
   width: 100%;
   font-size: 0.95rem;
-  padding: 0.3em 2.5em 0.3em 0.5em;
+  padding: 0 0.25rem 0 0.25em;
   background-color: var(--background-color-500);
   border-inline-end: 2px solid var(--background-color-600);
   border-color: transparent;

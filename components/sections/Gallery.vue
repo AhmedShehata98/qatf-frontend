@@ -11,37 +11,44 @@
       </h2>
     </div>
     <ul
-      v-if="populatedItems"
-      class="w-full grid grid-cols-4 grid-rows-2 gap-4 h-[35rem]"
+      v-if="gallery?.home?.galleryList"
+      class="w-full hidden md:grid grid-cols-4 grid-rows-2 gap-4 h-[35rem]"
     >
       <li
-        v-for="(item, index) in populatedItems"
+        v-for="item in gallery?.home?.galleryList"
         :key="item.id"
         class="flex items-center justify-center rounded-[20px] relative before:absolute before:bg-gradient-to-t before:content-[''] before:from-slate-900 before:w-full before:h-full overflow-hidden [&:nth-child(1)]:row-span-2 [&:nth-child(3)]:col-span-2"
       >
         <NuxtImg
+          provider="directus"
           :src="item.backgroundImage"
           :alt="item.backgroundImage"
           class="w-full h-full object-cover"
         />
       </li>
     </ul>
-    <ul class="md:hidden w-full grid grid-cols-3 md:grid-cols-4 gap-5">
+    <ul
+      v-if="gallery?.home?.galleryList"
+      class="md:hidden w-full grid grid-cols-3 md:grid-cols-4 gap-5"
+    >
       <li
-        v-for="(item, index) in items"
+        v-for="(item, index) in gallery?.home?.galleryList"
         :key="index"
         class="flex items-center justify-center rounded-[20px] relative before:absolute before:bg-gradient-to-t before:content-[''] before:from-slate-900 before:w-full before:h-full overflow-hidden"
         :class="[
           index === 1 || index === 2 ? 'max-md:col-span-2' : '',
-          index === items.length - 2 ? 'max-md:col-span-3 max-md:h-36' : '',
-          index === items.length - 1
+          index === gallery?.home?.galleryList.length - 2
+            ? 'max-md:col-span-3 max-md:h-36'
+            : '',
+          index === gallery?.home?.galleryList.length - 1
             ? 'max-md:col-span-3 max-md:h-[35rem]'
             : '',
         ]"
       >
-        <img
-          :src="item.src"
-          :alt="item.alt"
+        <nuxt-img
+          provider="directus"
+          :src="item.backgroundImage"
+          :alt="item.backgroundImage"
           class="w-full h-full object-cover"
         />
       </li>
@@ -51,7 +58,6 @@
 <script setup lang="ts">
 import { QUERY_KEYS } from "~/constants/query-keys";
 
-const img = useImage();
 const { $directus } = useNuxtApp();
 
 const { data: gallery } = await useAsyncData(
@@ -69,16 +75,5 @@ const { data: gallery } = await useAsyncData(
    }
   }
 `)
-);
-
-const populatedItems = computed(() =>
-  gallery.value?.home?.galleryList?.map((item: { backgroundImage: string }) => {
-    return {
-      ...item,
-      backgroundImage: img(item.backgroundImage, undefined, {
-        provider: "directus",
-      }),
-    };
-  })
 );
 </script>

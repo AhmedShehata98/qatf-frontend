@@ -6,10 +6,10 @@
     <div
       class="bg-primary/50 w-full py-24 flex items-center justify-center text-white flex-col max-md:px-4"
     >
-      <h3 class="text-4xl font-bold text-center mb-6">
+      <h3 class="text-4xl font-bold text-center mb-6 px-8">
         {{ newsLetterContent?.home?.newsletterHeadingTitle }}
       </h3>
-      <p class="text-xl font-semibold text-center mb-14">
+      <p class="text-xl font-semibold text-center mb-14 px-4">
         {{ newsLetterContent?.home?.newsletterHeadingDescription }}
       </p>
       <form

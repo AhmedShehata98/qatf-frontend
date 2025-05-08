@@ -1,6 +1,9 @@
 <template>
-  <footer class="bg-primary text-white pt-10">
-    <div class="flex items-center justify-center flex-col">
+  <footer
+    class="bg-primary text-white bg-fixed bg-cover bg-no-repeat bg-center"
+    :style="{ backgroundImage: `url(${backgroundImage})` }"
+  >
+    <div class="bg-primary/80 flex items-center justify-center pt-10 flex-col">
       <!-- Main Footer Content -->
       <div
         class="app-container w-full flex items-start justify-between gap-20 border-white/30 max-lg:flex-wrap"
@@ -61,7 +64,7 @@
           <h3 class="text-xl font-semibold mb-4">للتواصل معنا</h3>
           <div class="not-italic space-y-4 rtl:text-end">
             <span
-              class="block p-2 bg-gradient-to-r from-gray-[#008145] to-[#FFFFFF] rounded-lg before:rounded-lg relative before:absolute before:content-[''] before:inset-[1px] before:bg-primary"
+              class="block p-2 bg-gradient-to-r from-primary/90 to-[#ffffff96] rounded-lg before:rounded-lg relative before:absolute before:content-[''] before:inset-[1px] before:bg-gradient-to-r before:from-primary/50 before:to-primary/80"
             >
               <nuxt-link
                 dir="ltr"
@@ -76,7 +79,7 @@
               >
             </span>
             <span
-              class="block p-2 bg-gradient-to-l from-gray-[#008145] to-[#FFFFFF] rounded-lg before:rounded-lg relative before:absolute before:content-[''] before:inset-[1px] before:bg-primary"
+              class="block p-2 bg-gradient-to-l from-primary/90 to-[#ffffff96] rounded-lg before:rounded-lg relative before:absolute before:content-[''] before:inset-[1px] before:bg-gradient-to-l before:from-primary/50 before:to-primary/80"
             >
               <address class="isolate p-3">
                 {{ data?.appFooter.address }}
@@ -88,7 +91,7 @@
 
       <!-- Copyright & Policy -->
       <div
-        class="w-full flex flex-col md:flex-row justify-between items-center text-sm text-white/80 bg-primary brightness-125 py-6 mt-6"
+        class="w-full flex flex-col md:flex-row justify-between items-center text-sm text-white/80 bg-primary/40 brightness-150 py-6 mt-6"
       >
         <span
           class="w-full app-container max-md:flex-wrap flex items-center justify-between"
@@ -151,6 +154,7 @@ const navigationLinks = [
     onClick: undefined,
   },
 ];
+const img = useImage();
 const { data } = await useAsyncData(QUERY_KEYS.globalConfig.appFooter, () =>
   $directus.query(
     `
@@ -165,6 +169,7 @@ const { data } = await useAsyncData(QUERY_KEYS.globalConfig.appFooter, () =>
       address 
       copyRightsText
       termsOfPrivacyLabel
+      backgroundImage
       socialMedia {
         id
         icon
@@ -175,4 +180,7 @@ const { data } = await useAsyncData(QUERY_KEYS.globalConfig.appFooter, () =>
 `
   )
 );
+const backgroundImage = img(data.value.appFooter.backgroundImage, undefined, {
+  provider: "directus",
+});
 </script>

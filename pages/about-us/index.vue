@@ -3,24 +3,24 @@
     class="app-container flex gap-5 items-start justify-start my-8 md:my-16 flex-col"
   >
     <div
-      class="w-full flex items-start justify-start gap-5 max-md:flex-col-reverse"
+      class="w-full flex items-start justify-start gap-5 max-lg:flex-col-reverse"
     >
       <nuxt-img
         provider="directus"
         :src="data?.aboutUs.image"
         alt="hero.jpg"
-        class="w-full md:w-[35%] min-h-[15rem] md:min-h-[37.5rem] object-cover rounded-[20px]"
+        class="w-full lg:w-[35%] min-h-[15rem] lg:min-h-[37.5rem] object-cover rounded-[20px]"
       />
       <div
-        class="w-full md:w-[calc(64%-1.25rem)] flex items-start justify-start gap-3 flex-col"
+        class="w-full lg:w-[calc(64%-1.25rem)] flex items-start justify-start gap-3 flex-col"
       >
         <p
-          class="relative text-secondary text-base md:text-xs font-bold mb-2 text-center before:absolute before:bottom-0 before:left-0 before:w-full before:rounded-full before:h-1/2 before:bg-gradient-to-t px-2 py-1 before:from-secondary/60 isolate"
+          class="relative text-secondary text-base lg:text-xs font-bold mb-2 text-center before:absolute before:bottom-0 before:left-0 before:w-full before:rounded-full before:h-1/2 before:bg-gradient-to-t px-2 py-1 before:from-secondary/60 isolate"
         >
           {{ data?.aboutUs.headingTitle }}
         </p>
         <heading-highlighted-title
-          class="text-[28px] md:text-[32px] font-semibold text-black leading-snug !justify-start"
+          class="text-[28px] lg:text-[32px] font-semibold text-black leading-snug !justify-start"
           :words="descriptionSpacialWords"
           :title="
             data?.aboutUs.descriptionText
@@ -50,7 +50,7 @@
               </span>
             </span>
             <h3
-              class="text-white mt-14 md:mt-24 pb-5 tablet:px-8 text-base tablet:text-xl font-bold max-w-full overflow-hidden truncate"
+              class="text-white mt-14 md:mt-24 pb-5 tablet:lg-8 text-base tablet:text-xl font-bold max-w-full overflow-hidden truncate"
             >
               {{ data?.aboutUs.secondaryBoxDescription }}
             </h3>
@@ -73,7 +73,7 @@
               </span>
             </span>
             <h3
-              class="text-white mt-14 md:mt-24 pb-5 tablet:px-8 text-base tablet:text-xl font-bold max-w-full overflow-hidden truncate"
+              class="text-white mt-14 md:mt-24 pb-5 lg:px-8 text-base tablet:text-xl font-bold max-w-full overflow-hidden truncate"
             >
               {{ data?.aboutUs.primaryBoxDescription }}
             </h3>

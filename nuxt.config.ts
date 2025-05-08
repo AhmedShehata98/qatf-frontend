@@ -32,6 +32,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       directusUrl: process.env.DIRECTUS_URL,
+      directusAccessToken: process.env.DIRECTUS_ACCESS_TOKEN,
     },
   },
   image: {

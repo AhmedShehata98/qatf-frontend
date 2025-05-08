@@ -22,13 +22,13 @@
         :class="[stat.isActive ? 'bg-primary' : `bg-white`]"
       >
         <h3
-          class="text-5xl font-extrabold text-start"
+          class="text-[40px] tablet:text-5xl font-extrabold text-start"
           :class="stat.isActive ? 'text-white' : 'text-black'"
         >
           {{ stat.title }}
         </h3>
         <p
-          class="text-xl font-bold"
+          class="text-base tablet:text-xl font-bold"
           :class="stat.isActive ? 'text-white' : 'text-black'"
         >
           {{ stat.description }}
