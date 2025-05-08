@@ -144,7 +144,7 @@
         @click="handleSubmit"
         class="flex items-center justify-center gap-2.5 bg-secondary rounded-full py-2 px-5 w-full text-white mt-8 disabled:bg-slate-400"
         :disabled="isLoading || isError"
-        v-if="!isSuccess || !isError"
+        v-if="!isSuccess && !isError"
       >
         <span
           v-if="isLoading"
@@ -159,7 +159,7 @@
         type="button"
         class="rounded-full py-2 px-5 w-full text-white mt-8 bg-emerald-600"
       >
-        لقد تم اضافة عناصر السلة بنجاح
+        لقد تم إرسال الطلب بنجاح, تفقد بريدك الالكتروني
       </button>
       <button
         v-if="isError"
@@ -238,34 +238,61 @@ const resetForm = () => {
 };
 
 const handleSubmit = async () => {
-  console.log({ form, cart: props.cart });
   try {
     const items = props.cart;
     isLoading.value = true;
-    const cart = await createCart();
+
+    // prepare cart body calculate total price and user info
+    const totalPrice = calculateTotalPrice(props.cart);
+    const userInfo = {
+      companyName: form.companyName,
+      phoneNumber: `${form.countryCode}${form.phone}`,
+      activity: form.activity,
+      isOrderedBefore: form.isOrderedBefore,
+    };
+
+    // create new cart to assign cart items to it
+    const cart = await $fetch<{ id: number }>("/api/cart", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: {
+        form: userInfo,
+        totalPrice,
+      },
+    });
     isLoading.value = false;
     if (!cart) {
       console.log("create cart failed");
       return;
     }
-    console.log("created cart");
+
+    // create cart items to cart with cart id
     items.forEach(async (item) => {
       isLoading.value = true;
       if (!item.id) {
         console.log("cart item has no id");
         return;
       }
-      const createdItem = await createCartItem({
-        cartId: cart.id,
-        productId: item.id,
-        quantity: item.quantity,
+      const createdItem = await $fetch("/api/cart-items", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: {
+          cartId: cart.id,
+          productId: item.id,
+          quantity: item.quantity,
+        },
       });
     });
     isLoading.value = false;
     isSuccess.value = true;
+    // TODO: send email to admin and user
     resetForm();
     clearCart();
-  } catch (error) {
+  } catch (error: any) {
     isError.value = true;
     isSuccess.value = false;
     errorMsg.value = error.message;
@@ -278,85 +305,41 @@ const handleSubmit = async () => {
   }
 };
 
-// 1. create function to calculate total price [GET /api/cart]
-function calculateTotalPrice(cart: CartType[]) {
-  if (!cart || cart.length === 0)
-    throw new Error("Provider cart items to calc total price !");
-
-  const totalPrice = cart.reduce(
-    (acc, item) => (acc += item.price * item.quantity),
-    0
-  );
-
+const calculateTotalPrice = (items: CartType[]) => {
+  let totalPrice = 0;
+  items.forEach((item) => {
+    totalPrice += item.price * item.quantity;
+  });
   return totalPrice;
-}
-// 2. create function to send create cart request with (orderId:uuid, user-info ,isPaid=false
-async function createCart() {
-  try {
-    const directus = createDirectus(useRuntimeConfig().public.directusUrl).with(
-      rest()
-    );
+};
 
-    const totalPrice = calculateTotalPrice(props.cart);
-    const orderId = crypto.randomUUID();
-    const userInfo = {
-      companyName: form.companyName,
-      phoneNumber: `${form.countryCode}${form.phone}`,
-      activity: form.activity,
-      isOrderedBefore: form.isOrderedBefore,
-    };
-    const isPaid = false;
-    const orderStatus = "in-process";
-
-    const cart = {
-      orderId,
-      ...userInfo,
-      isPaid,
-      orderStatus,
-      totalPrice,
-    };
-
-    const res = await directus.request(
-      withToken(
-        useRuntimeConfig().public.directusAccessToken,
-        createItem("cart", cart)
-      )
-    );
-
-    return res;
-  } catch (error) {
-    if (import.meta.dev) {
-      console.log(error);
-    } else {
-      console.error("create cart failed");
-    }
+watch(isError, (val, oldVal, onCleanup) => {
+  let timeoutRef: number;
+  if (val) {
+    timeoutRef = +setTimeout(() => {
+      isError.value = false;
+    }, 3000);
   }
-}
-async function createCartItem(cartItem: {
-  cartId: number;
-  productId: number;
-  quantity: number;
-}) {
-  try {
-    const directus = createDirectus(useRuntimeConfig().public.directusUrl).with(
-      rest()
-    );
 
-    const res = await directus.request(
-      withToken(
-        useRuntimeConfig().public.directusAccessToken,
-        createItem("cart_items", cartItem)
-      )
-    );
-    return res;
-  } catch (error) {
-    if (import.meta.dev) {
-      console.log(error);
-    } else {
-      console.error("create cart item failed");
+  onCleanup(() => {
+    if (timeoutRef) {
+      clearTimeout(timeoutRef);
     }
+  });
+});
+
+watch(isSuccess, (val, oldVal, onCleanup) => {
+  let timeoutRef: number;
+  if (val) {
+    timeoutRef = +setTimeout(() => {
+      isSuccess.value = false;
+    }, 3000);
   }
-}
-//    orderStatus=is-process ,totalPrice ) [POST /api/cart]
-// 3. create function to send create cartItem request with (cartId:int ,productId:id,quantity) [POST /api/cart_items]
+
+  onCleanup(() => {
+    if (timeoutRef) {
+      clearTimeout(timeoutRef);
+    }
+  });
+});
 </script>
