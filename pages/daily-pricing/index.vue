@@ -94,7 +94,6 @@
         </span>
       </div>
     </form>
-
     <template v-if="groupedProducts">
       <div
         class="w-full flex flex-col items-start justify-start"
@@ -182,7 +181,6 @@ const { data: products, error: productsError } = await useAsyncData(
   `)
 );
 
-console.log("products: ", products.value);
 const groupedProducts = computed(
   () =>
     Object.groupBy(
