@@ -24,5 +24,6 @@ export const QUERY_KEYS = {
     socialMedia: "collections:socialMedia",
     aboutItems: "collections:aboutItems",
     products: "collections:products",
+    globalSEO: "collections:globalSEO",
   },
 };

@@ -139,6 +139,8 @@ const handleAddToCart = (product: Product) => {
   addToCart(product);
 };
 
+const img = useImage();
+
 const { data, error } = await useAsyncData(QUERY_KEYS.pages.products, () =>
   $directus.query(
     `
@@ -183,4 +185,41 @@ const groupedProducts = computed(
       (item) => item.title
     ) || []
 );
+
+useServerHeadSafe({
+  script: [
+    {
+      type: "application/ld+json",
+      children: computed(() => {
+        if (!products.value?.products) return "{}";
+
+        const itemListElements = products.value?.products.map(
+          (product: Product, index: number) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "Product",
+              name: product.title,
+              image: img(product.image, undefined, { provider: "directus" }),
+              offers: {
+                "@type": "Offer",
+                price: product.price,
+                priceCurrency: product.currency,
+                availability: "https://schema.org/InStock",
+              },
+            },
+          })
+        );
+
+        return JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: itemListElements,
+          numberOfItems: itemListElements.length,
+          name: data?.value?.productsPricing.headingTitle || "all Products",
+        });
+      }),
+    },
+  ],
+});
 </script>

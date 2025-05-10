@@ -36,10 +36,12 @@
 <script setup lang="ts">
 import ProductCard from "@/components/ProductCard.vue";
 import { QUERY_KEYS } from "~/constants/query-keys";
+import { computed } from "vue";
+import type { Product } from "~/types/product";
 
 const { $directus } = useNuxtApp();
 const { addToCart, isInTheCart } = useCart();
-
+const img = useImage();
 const { data: products } = await useAsyncData(
   QUERY_KEYS.pages.home.products,
   () =>
@@ -63,4 +65,43 @@ const { data: products } = await useAsyncData(
   }
 `)
 );
+
+useServerHeadSafe({
+  script: [
+    {
+      type: "application/ld+json",
+      children: computed(() => {
+        if (!products.value?.home?.prodoctsFeaturedList) return "{}";
+
+        const itemListElements = products.value.home.prodoctsFeaturedList.map(
+          (product: Product, index: number) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            item: {
+              "@type": "Product",
+              name: product.title,
+              image: img(product.image, undefined, { provider: "directus" }),
+              offers: {
+                "@type": "Offer",
+                price: product.price,
+                priceCurrency: product.currency,
+                availability: "https://schema.org/InStock",
+              },
+            },
+          })
+        );
+
+        return JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          itemListElement: itemListElements,
+          numberOfItems: itemListElements.length,
+          name:
+            products.value.home.prodoctsHeadingDescription ||
+            "Featured Products",
+        });
+      }),
+    },
+  ],
+});
 </script>

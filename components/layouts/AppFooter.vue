@@ -104,7 +104,6 @@
               )
             }}
           </p>
-          <!-- TODO: -->
           <NuxtLink
             to="/privacy-and-terms"
             class="hover:underline mt-2 md:mt-0 max-md:w-full text-center"
