@@ -39,6 +39,11 @@ export const unitMap: Record<ProductUnit, string> = {
   [ProductUnit.SOUBATE]: "سوباطة",
   [ProductUnit.NET]: "شبكة",
 };
+
+type Category = {
+  name: string;
+  description: string;
+};
 export interface Product {
   id: number;
   title: string;
@@ -48,4 +53,5 @@ export interface Product {
   unit: ProductUnit;
   tags: string[];
   stock: number;
+  category: Category;
 }

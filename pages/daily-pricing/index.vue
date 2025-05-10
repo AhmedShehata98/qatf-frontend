@@ -173,16 +173,21 @@ const { data: products, error: productsError } = await useAsyncData(
         unit
         tags
         stock
+        category {
+          name
+          description
+        }
       }
     }
   `)
 );
 
+console.log("products: ", products.value);
 const groupedProducts = computed(
   () =>
     Object.groupBy(
       products.value?.products as Product[],
-      (item) => item.title
+      (item) => item.category?.name
     ) || []
 );
 
