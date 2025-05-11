@@ -143,7 +143,7 @@
         type="button"
         @click="handleSubmit"
         class="flex items-center justify-center gap-2.5 bg-secondary rounded-full py-2 px-5 w-full text-white mt-8 disabled:bg-slate-400"
-        :disabled="isLoading || isError"
+        :disabled="isLoading || isError || !isValidForm"
         v-if="!isSuccess && !isError"
       >
         <span
@@ -172,7 +172,6 @@
   </Modal>
 </template>
 <script setup lang="ts">
-import { createDirectus, createItem, rest, withToken } from "@directus/sdk";
 import { QUERY_KEYS } from "~/constants/query-keys";
 import type { CartType } from "~/types/cart";
 
@@ -224,6 +223,16 @@ const { data, error } = await useAsyncData(QUERY_KEYS.pages.cartContent, () =>
     `
   )
 );
+
+const isValidForm = computed(() => {
+  return (
+    form.companyName &&
+    form.phone &&
+    form.countryCode &&
+    form.activity &&
+    form.isOrderedBefore
+  );
+});
 
 const resetForm = () => {
   form.companyName = "";

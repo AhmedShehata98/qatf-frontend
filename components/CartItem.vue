@@ -71,7 +71,33 @@
           </svg>
         </button>
       </div>
-      <p class="text-green-600 font-bold px-5">{{ data.price }} ر.س</p>
+      <span class="flex items-center gap-1 max-md:justify-between">
+        <p class="text-green-600 font-bold px-5">{{ data.price }} ر.س</p>
+        <button
+          type="button"
+          @click="emit('remove-item', data)"
+          class="text-red-600 hover:bg-red-300 rounded-full p-1.5 transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-trash2-icon lucide-trash-2"
+          >
+            <path d="M3 6h18" />
+            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+            <line x1="10" x2="10" y1="11" y2="17" />
+            <line x1="14" x2="14" y1="11" y2="17" />
+          </svg>
+        </button>
+      </span>
     </div>
   </li>
 </template>
