@@ -6,7 +6,7 @@
     <div class="bg-primary/80 flex items-center justify-center pt-10 flex-col">
       <!-- Main Footer Content -->
       <div
-        class="app-container w-full flex items-start justify-between gap-20 border-white/30 max-lg:flex-wrap"
+        class="app-container w-full flex items-start justify-between max-md:gap-7 gap-20 border-white/30 max-lg:flex-wrap"
       >
         <!-- Description & Logo -->
         <div
@@ -24,27 +24,28 @@
           <!-- Social Media Icons -->
           <div
             v-if="data?.appFooter.socialMedia"
-            class="flex justify-end gap-4 pt-4"
+            class="flex justify-end gap-4 pt-4 max-md:w-full max-md:justify-center"
           >
             <a
               v-for="platform of data?.appFooter.socialMedia"
               :key="platform.id"
               :href="platform.platformUrl"
               :aria-label="platform.platformUrl"
-              class="hover:opacity-80"
+              class="hover:opacity-80 max-md:w-12"
             >
               <NuxtImg
                 provider="directus"
                 :src="`${platform.icon}`"
                 :alt="platform.id"
+                class="max-md:w-full"
               />
             </a>
           </div>
         </div>
         <!-- Navigation Links -->
         <nav
-          class="w-full md:w-1/2 flex flex-wrap gap-x-6 gapy-3 items-center justify-center h-fit self-center"
           v-if="navigationLinks"
+          class="w-full md:w-1/2 flex flex-wrap gap-x-6 gapy-3 items-center justify-center h-fit self-center"
         >
           <template v-for="link of navigationLinks" :key="link.id">
             <NuxtLink

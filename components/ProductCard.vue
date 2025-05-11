@@ -1,11 +1,11 @@
 <template>
   <div
-    class="product-card rounded-xl bg-white flex flex-col items-center p-2 md:p-4 relative"
+    class="product-card rounded-xl bg-white flex flex-col items-center p-1 tablet:p-4 relative"
   >
     <div class="relative">
       <span
         v-if="data.tags && data.tags.length"
-        class="absolute top-0 right-0 p-2 md:px-3 md:py-4 flex gap-2 rtl:right-2 rtl:left-auto ltr:left-2 ltr:right-auto"
+        class="max-w-full absolute top-0 right-0 p-2 md:px-3 md:py-4 flex gap-1 md:gap-2 rtl:right-2 rtl:left-auto ltr:left-2 ltr:right-auto max-sm:flex-wrap"
       >
         <span
           v-for="tag in data.tags"
@@ -23,7 +23,7 @@
         class="rounded-[20px] max-w-full min-w-full min-h-[100px] tablet:min-h-[250px] object-cover"
       />
       <button
-        class="add-btn absolute left-4 bottom-4 bg-primary text-white rounded-[10px] w-9 h-9 flex items-center justify-center mt-2 hover:bg-primary transition-colors"
+        class="add-btn absolute left-1 bottom-1 tablet:left-4 tablet:bottom-4 bg-primary text-white rounded-md md:rounded-[10px] size-7 md:w-9 md:h-9 flex items-center justify-center mt-2 hover:bg-primary transition-colors"
         :class="isInTheCart ? 'bg-slate-500' : 'bg-primary'"
         @click="$emit('on-add-to-cart', data)"
         :disabled="Boolean(isInTheCart)"
@@ -102,9 +102,9 @@ function tagClass(tag: string) {
   min-width: 180px;
   min-height: 260px;
 }
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 467px) {
   .product-card {
-    min-width: 180px;
+    min-width: fit-content;
     min-height: fit-content;
   }
 }
