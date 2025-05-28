@@ -6,17 +6,19 @@
       <p
         class="relative w-fit text-secondary max-md:text-base text-xs font-bold mb-1 text-start before:absolute before:bottom-0 before:left-0 before:w-full before:rounded-full before:h-1/2 before:bg-gradient-to-t px-2 py-1 before:from-secondary/60 isolate"
       >
-        {{ about?.home?.aboutHeadingTitle }}
+        {{ about?.aboutHeadingTitle }}
       </p>
-      <h3 class="text-black font-bold text-[32px] lg:text-[44px] text-start">
-        {{ about?.home?.aboutHeadingDescription }}
+      <h3
+        class="text-black font-bold text-[32px] lg:text-[44px] text-start ltr:leading-tight"
+      >
+        {{ about?.aboutHeadingDescription }}
       </h3>
     </span>
     <ul
       class="mt-8 grid grid-cols-2 md:grid-cols-3 gap-6 md:[&>:nth-child(odd)]:flex-col-reverse"
     >
       <li
-        v-for="(item, index) in populatedCards"
+        v-for="(item, index) in about.aboutItems"
         :key="index"
         class="flex flex-col max-md:flex-col-reverse gap-4 md:gap-2 max-md:order-1 max-md:col-span-2 max-md:h-fit max-md:max-h-96"
       >
@@ -114,39 +116,69 @@ import { QUERY_KEYS } from "~/constants/query-keys";
 
 const img = useImage();
 const { $directus } = useNuxtApp();
+const { currentTranslation } = useTranslations();
 
-const { data: about } = await useAsyncData(QUERY_KEYS.pages.home.about, () =>
-  $directus.query(`
+const { data: aboutData } = await useAsyncData(
+  QUERY_KEYS.pages.home.about,
+  () =>
+    $directus.query(`
   query {
-   home {
-    aboutHeadingTitle
-    aboutHeadingDescription
+    home {
       aboutItems {
         id
-        title
-        description
-        icon
         background
+        icon
+        translations {
+          id
+          languages_id
+          title
+          description
+        }
       }
-   }
+      translations {
+        id
+        languages_id
+        aboutHeadingTitle
+        aboutHeadingDescription
+      }
+    }
   }
 `)
 );
-const populatedCards = computed(() => {
-  if (about.value?.home?.aboutItems) {
-    return about.value?.home?.aboutItems.map(
-      (item: { icon: string; background: string }) => {
-        return {
-          ...item,
-          icon: img(item.icon, undefined, {
-            provider: "directus",
-          }),
-          background: img(item.background, undefined, {
-            provider: "directus",
-          }),
-        };
-      }
-    );
-  }
+
+const about = computed(() => {
+  return {
+    ...aboutData.value?.home,
+    ...aboutData.value?.home?.translations.find(
+      (t: {
+        languages_id: number;
+        aboutHeadingTitle: string;
+        aboutHeadingDescription: string;
+      }) => t.languages_id.toString() === currentTranslation.value.id
+    ),
+    aboutItems: aboutData.value?.home?.aboutItems.map(
+      (item: {
+        icon: string;
+        background: string;
+        translations: {
+          languages_id: number;
+          title: string;
+          description: string;
+        }[];
+      }) => ({
+        ...item,
+        icon: img(item.icon, undefined, {
+          provider: "directus",
+        }),
+        background: img(item.background, undefined, {
+          provider: "directus",
+        }),
+        ...item.translations.find(
+          (t: { languages_id: number; title: string; description: string }) =>
+            t.languages_id.toString() === currentTranslation.value.id
+        ),
+      })
+    ),
+  };
 });
 </script>

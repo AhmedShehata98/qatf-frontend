@@ -16,45 +16,49 @@
             provider="directus"
             :src="`${data?.appFooter?.logoImage}`"
             alt="Qatf Farm Logo White"
-            class="h-15 mb-4 ml-auto"
+            class="h-15 mb-4"
           />
-          <p class="text-sm leading-relaxed">
-            {{ data?.appFooter.description }}
+          <p class="text-sm text-start leading-relaxed">
+            {{ appFooter.description }}
           </p>
           <!-- Social Media Icons -->
           <div
             v-if="data?.appFooter.socialMedia"
-            class="flex justify-end gap-4 pt-4 max-md:w-full max-md:justify-center"
+            class="w-full flex justify-start gap-4 pt-4 max-md:w-full max-md:justify-center"
           >
             <a
-              v-for="platform of data?.appFooter.socialMedia"
+              v-for="platform of appFooter.socialMedia"
               :key="platform.id"
               :href="platform.platformUrl"
               :aria-label="platform.platformUrl"
-              class="hover:opacity-80 max-md:w-12"
+              class="hover:opacity-80 w-12"
             >
               <NuxtImg
                 provider="directus"
                 :src="`${platform.icon}`"
                 :alt="platform.id"
-                class="max-md:w-full"
+                class="w-full"
               />
             </a>
           </div>
         </div>
         <!-- Navigation Links -->
         <nav
-          v-if="navigationLinks"
+          v-if="appFooter.websiteLinks"
           class="w-full md:w-1/2 flex flex-wrap gap-x-6 gapy-3 items-center justify-center h-fit self-center"
         >
-          <template v-for="link of navigationLinks" :key="link.id">
+          <template v-for="link of appFooter.websiteLinks" :key="link.id">
             <NuxtLink
-              v-if="link.path"
+              v-if="link.path && !link.path.match(/^\[.*\]$/)"
               :to="link.path"
               class="block hover:underline"
               >{{ link.title }}</NuxtLink
             >
-            <button v-if="!link.path" type="button" @click="link.onClick">
+            <button
+              v-if="!link.path || link.path.match(/^\[.*\]$/)"
+              type="button"
+              @click="showModal"
+            >
               {{ link.title }}
             </button>
           </template>
@@ -62,28 +66,30 @@
 
         <!-- Contact Info -->
         <div class="w-full md:w-1/3 space-y-4">
-          <h3 class="text-xl font-semibold mb-4">للتواصل معنا</h3>
+          <h3 class="text-xl font-semibold mb-4">
+            {{ appFooter.headingTitle }}
+          </h3>
           <div class="not-italic space-y-4 rtl:text-end">
             <span
               class="block p-2 bg-gradient-to-r from-primary/90 to-[#ffffff96] rounded-lg before:rounded-lg relative before:absolute before:content-[''] before:inset-[1px] before:bg-gradient-to-r before:from-primary/50 before:to-primary/80"
             >
               <nuxt-link
                 dir="ltr"
-                :href="`tel:${data?.appFooter.contactPhone}`"
+                :href="`tel:${appFooter.contactPhone}`"
                 class="block hover:underline isolate"
-                >{{ data?.appFooter.contactPhone }}</nuxt-link
+                >{{ appFooter.contactPhone }}</nuxt-link
               >
               <nuxt-link
-                :href="`mailto:${data?.appFooter.contactEmail}`"
+                :href="`mailto:${appFooter.contactEmail}`"
                 class="block hover:underline text-start isolate"
-                >{{ data?.appFooter.contactEmail }}</nuxt-link
+                >{{ appFooter.contactEmail }}</nuxt-link
               >
             </span>
             <span
               class="block p-2 bg-gradient-to-l from-primary/90 to-[#ffffff96] rounded-lg before:rounded-lg relative before:absolute before:content-[''] before:inset-[1px] before:bg-gradient-to-l before:from-primary/50 before:to-primary/80"
             >
               <address class="isolate p-3">
-                {{ data?.appFooter.address }}
+                {{ appFooter.address }}
               </address>
             </span>
           </div>
@@ -99,8 +105,8 @@
         >
           <p class="max-md:w-full text-center">
             {{
-              data?.appFooter.copyRightsText?.replace(
-                "{copyrightYear}",
+              appFooter.copyRightsText?.replace(
+                " {copyRightYear}",
                 copyRightYear
               )
             }}
@@ -108,7 +114,7 @@
           <NuxtLink
             to="/privacy-and-terms"
             class="hover:underline mt-2 md:mt-0 max-md:w-full text-center"
-            >{{ data?.appFooter.termsOfPrivacyLabel }}</NuxtLink
+            >{{ appFooter.termsOfPrivacyLabel }}</NuxtLink
           >
         </span>
       </div>
@@ -122,64 +128,61 @@ import { QUERY_KEYS } from "~/constants/query-keys";
 const copyRightYear = shallowRef(new Date().getFullYear());
 const { $directus } = useNuxtApp();
 const { showModal } = useShowCartModal();
-const navigationLinks = [
-  {
-    id: 1,
-    title: "الرئيسية",
-    path: "/",
-    onClick: undefined,
-  },
-  {
-    id: 2,
-    title: "من نحن",
-    path: "/about-us",
-    onClick: undefined,
-  },
-  {
-    id: 3,
-    title: "تسعيرة اليوم",
-    path: "/daily-pricing",
-    onClick: undefined,
-  },
-  {
-    id: 4,
-    title: "السلة",
-    path: undefined,
-    onClick: () => showModal(),
-  },
-  {
-    id: 5,
-    title: "تواصل معنا",
-    path: "/contact-us",
-    onClick: undefined,
-  },
-];
+const { currentTranslation } = useTranslations();
+
 const img = useImage();
 const { data } = await useAsyncData(QUERY_KEYS.globalConfig.appFooter, () =>
   $directus.query(
     `
-  query {
-    appFooter {
-      id
-      logoImage
-      description
-      headingTitle
-      contactPhone
-      contactEmail
-      address 
-      copyRightsText
-      termsOfPrivacyLabel
-      backgroundImage
-      socialMedia {
+    query {
+      appFooter {
         id
-        icon
-        platformUrl
+        logoImage
+        backgroundImage
+        socialMedia {
+          id
+          icon
+          platformUrl
+        }
+        websiteLinks {
+          id
+          translations {
+            id
+            title
+            languages_id
+          }
+          path
+        }
+        translations {
+          id
+          headingTitle
+          description
+          contactPhone
+          contactEmail
+          copyRightsText
+          termsOfPrivacyLabel
+          address
+        }
       }
     }
-  }
 `
   )
 );
+const appFooter = computed(() => {
+  return {
+    ...data.value.appFooter,
+    ...data.value.appFooter.translations.find(
+      (t) => t.id === currentTranslation.value.id
+    ),
+    websiteLinks: data.value.appFooter.websiteLinks.map((link) => ({
+      ...link,
+      ...link.translations.find(
+        (t) => t.languages_id.toString() === currentTranslation.value.id
+      ),
+    })),
+  };
+});
+
 const backgroundImage = img(data.value.appFooter.backgroundImage, undefined, {
   provider: "directus",
 });

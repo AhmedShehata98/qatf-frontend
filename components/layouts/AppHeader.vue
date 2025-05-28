@@ -7,7 +7,7 @@
       <div>
         <nuxt-img
           provider="directus"
-          :src="data?.appHeader.logo"
+          :src="appHeader.logo"
           alt="logo"
           class="h-14 tablet:h-10"
         />
@@ -15,12 +15,12 @@
       <button
         v-if="!isOpenMenu"
         type="button"
-        @click="isOpenMenu = !isOpenMenu"
         class="tablet:hidden"
+        @click="isOpenMenu = !isOpenMenu"
       >
         <nuxt-img
           provider="directus"
-          :src="data?.appHeader.openSideNaviationMenuIcon"
+          :src="appHeader.openSideNaviationMenuIcon"
           alt="open side navigation menu"
           class="h-9"
         />
@@ -28,12 +28,12 @@
       <button
         v-if="isOpenMenu"
         type="button"
-        @click="isOpenMenu = !isOpenMenu"
         class="tablet:hidden"
+        @click="isOpenMenu = !isOpenMenu"
       >
         <nuxt-img
           provider="directus"
-          :src="data?.appHeader.closeSideNaviationMenuIcon"
+          :src="appHeader.closeSideNaviationMenuIcon"
           alt="close side navigation menu"
           class="h-9"
         />
@@ -41,16 +41,16 @@
       <!-- Navigation -->
       <nav class="hidden tablet:flex items-center gap-2 rtl:space-x-reverse">
         <NuxtLink
-          to="/"
+          v-for="link of appHeader.navLinks"
+          :key="link.id"
+          :to="link.path"
           class="header__nav_link"
           :class="
-            $route.path === '/' && $route.path.endsWith('/')
-              ? 'header__nav_link_active'
-              : ''
+            $route.path.endsWith(link.path) ? 'header__nav_link_active' : ''
           "
-          >الرئيسية</NuxtLink
+          >{{ link.title }}</NuxtLink
         >
-        <NuxtLink
+        <!-- <NuxtLink
           to="/about-us"
           class="header__nav_link"
           :class="
@@ -69,7 +69,7 @@
               : ''
           "
           >تسعيرة اليوم</NuxtLink
-        >
+        > -->
       </nav>
       <!-- Actions -->
       <div class="hidden tablet:flex items-center gap-4 rtl:space-x-reverse">
@@ -86,16 +86,32 @@
           </p>
           <nuxt-img
             provider="directus"
-            :src="data?.appHeader.cartButtonIcon"
+            :src="appHeader.cartButtonIcon"
             alt="open side navigation menu"
             class="h-6"
           />
         </button>
+        <div
+          class="flex flex-row items-center justify-start gap-2 border border-transparent focus-within:border-gray-300 px-3 rounded-full"
+        >
+          <select
+            v-model="currentTranslation"
+            class="focus:outline-none px-2 py-1 text-sm"
+          >
+            <option
+              v-for="translation in translations"
+              :key="translation.id"
+              :value="translation"
+            >
+              {{ translation.name }}
+            </option>
+          </select>
+        </div>
         <NuxtLink
-          :href="data?.appHeader.ctaButtonHref"
+          :href="appHeader.ctaButtonHref"
           class="px-5 py-2 border rounded-full border-black text-black hover:border-primary hover:text-primary transition-colors"
         >
-          {{ data?.appHeader.ctaButtonLabel }}
+          {{ appHeader.ctaButtonLabel }}
         </NuxtLink>
       </div>
 
@@ -105,65 +121,25 @@
         :class="isOpenMenu ? 'translate-x-0' : 'translate-x-[150%]'"
       >
         <nav class="w-full grid grid-flow-row h-full gap-2 min-h-full">
-          <NuxtLink
-            to="/"
-            class="header__nav_link"
-            :class="$route.path === '/' ? 'header__nav_link_active' : ''"
-            @click="isOpenMenu = !isOpenMenu"
-            >الرئيسية</NuxtLink
-          >
-          <NuxtLink
-            to="/about-us"
-            class="header__nav_link"
-            :class="
-              $route.fullPath.endsWith('/about-us')
-                ? 'header__nav_link_active'
-                : ''
-            "
-            @click="isOpenMenu = !isOpenMenu"
-            >من نحن</NuxtLink
-          >
-          <NuxtLink
-            to="/daily-pricing"
-            class="header__nav_link"
-            :class="
-              $route.fullPath.endsWith('/daily-pricing')
-                ? 'header__nav_link_active'
-                : ''
-            "
-            @click="isOpenMenu = !isOpenMenu"
-            >تسعيرة اليوم</NuxtLink
-          >
-          <button
-            type="button"
-            class="px-3 py-2 flex flex-row items-center justify-start gap-6"
-            :class="isOpenModal ? 'header__nav_link_active' : ''"
-            @click="
-              () => {
-                showModal();
-                isOpenMenu = !isOpenMenu;
-              }
-            "
-          >
-            <p>السلة</p>
-            <p
-              v-show="getCartQuantity() > 0"
-              class="size-6 bg-secondary rounded-sm flex items-center justify-center text-sm p-1 text-white overflow-hidden shadow-md"
+          <template v-for="link of appHeader.websiteLinks" :key="link.id">
+            <NuxtLink
+              v-if="link.path && !link.path.match(/^\[.*\]$/)"
+              :to="link.path"
+              class="header__nav_link"
+              :class="
+                $route.path.endsWith(link.path) ? 'header__nav_link_active' : ''
+              "
+              >{{ link.title }}</NuxtLink
             >
-              {{ getCartQuantity() < 99 ? getCartQuantity() : "99+" }}
-            </p>
-          </button>
-          <NuxtLink
-            to="/contact-us"
-            class="header__nav_link"
-            :class="
-              $route.fullPath.endsWith('/contact-us')
-                ? 'header__nav_link_active'
-                : ''
-            "
-            @click="isOpenMenu = !isOpenMenu"
-            >تواصل معنا</NuxtLink
-          >
+            <button
+              v-if="!link.path || link.path.match(/^\[.*\]$/)"
+              type="button"
+              class="py-1.5 px-3 text-start"
+              @click="handleShowCartModal"
+            >
+              {{ link.title }}
+            </button>
+          </template>
         </nav>
       </div>
     </div>
@@ -173,41 +149,80 @@
 import { QUERY_KEYS } from "~/constants/query-keys";
 
 const isOpenMenu = shallowRef(false);
-const { showModal, isOpenModal } = useShowCartModal();
+const { showModal } = useShowCartModal();
 const { getCartQuantity } = useCart();
 const { $directus } = useNuxtApp();
+const { currentTranslation, translations } = useTranslations();
 
-const { data, error } = await useAsyncData(
-  QUERY_KEYS.globalConfig.appHeader,
-  () =>
-    $directus.query(`
+const handleShowCartModal = () => {
+  isOpenMenu.value = false;
+  showModal();
+};
+
+const { data } = await useAsyncData(QUERY_KEYS.globalConfig.appHeader, () =>
+  $directus.query(`
     query {
+      appFooter {
+        websiteLinks {
+          id
+          translations {
+            id
+            title
+            languages_id
+          }
+          path
+        }
+      }
       appHeader {
         id
         logo
         openSideNaviationMenuIcon
         closeSideNaviationMenuIcon
         cartButtonIcon
-        ctaButtonLabel
         ctaButtonHref
+        navLinks {
+          id
+          translations {
+            id
+            languages_id
+            title
+          }
+          path
+        }
+        translations {
+          id
+          ctaButtonLabel
+          languages_id
+        }
       }
     }
   `)
 );
-
-watch(isOpenMenu, (newValue) => {
-  if (import.meta.client) {
-    if (newValue) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-  }
-});
-
-onUnmounted(() => {
-  if (import.meta.client) {
-    document.body.style.overflow = "auto";
-  }
+const appHeader = computed(() => {
+  return {
+    ...data.value?.appHeader,
+    ...data.value?.appHeader?.translations.find(
+      (t: { languages_id: number; ctaButtonLabel: string }) =>
+        t.languages_id.toString() === currentTranslation.value.id
+    ),
+    navLinks: data.value?.appHeader?.navLinks.map(
+      (link: { translations: { languages_id: number; title: string }[] }) => ({
+        ...link,
+        ...link.translations.find(
+          (t: { languages_id: number; title: string }) =>
+            t.languages_id.toString() === currentTranslation.value.id
+        ),
+      })
+    ),
+    websiteLinks: data.value?.appFooter?.websiteLinks.map(
+      (link: { translations: { languages_id: number; title: string }[] }) => ({
+        ...link,
+        ...link.translations.find(
+          (t: { languages_id: number; title: string }) =>
+            t.languages_id.toString() === currentTranslation.value.id
+        ),
+      })
+    ),
+  };
 });
 </script>

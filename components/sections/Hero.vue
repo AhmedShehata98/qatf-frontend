@@ -3,7 +3,7 @@
     class="relative bg-cover bg-center bg-fixed text-white py-40 min-h-dvh"
     :style="{ 'background-image': `url(${heroImage})` }"
   >
-    <div class="absolute inset-0 bg-black/60"></div>
+    <div class="absolute inset-0 bg-black/60" />
     <div
       class="app-container relative z-10 text-center flex flex-col items-center"
     >
@@ -18,13 +18,13 @@
       </span>
 
       <p class="max-w-2xl mx-auto mb-8 text-lg text-white/70">
-        {{ hero.home.heroDescription }}
+        {{ hero.home?.heroDescription }}
       </p>
       <NuxtLink
-        :href="hero.home.heroCtaHref"
+        :href="hero.home?.heroCtaHref"
         class="bg-white text-primary font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transition-colors"
       >
-        {{ hero.home.heroCtaTitle }}
+        {{ hero.home?.heroCtaTitle }}
       </NuxtLink>
     </div>
   </section>
@@ -35,32 +35,47 @@ import { NuxtLink } from "#components";
 import { QUERY_KEYS } from "~/constants/query-keys";
 const img = useImage();
 const { $directus } = useNuxtApp();
-const { data: hero } = await useAsyncData(QUERY_KEYS.pages.home.hero, () =>
+const { currentTranslation } = useTranslations();
+const { data: heroData } = await useAsyncData(QUERY_KEYS.pages.home.hero, () =>
   $directus.query(`
-  query {
-   home {
-    heroBackground
-    heroHeading
-    heroHeadingImage
-    heroDescription
-    heroCtaHref
-    heroCtaTitle
-    
-   }
-  }
+    query {
+      home {
+        heroBackground
+        heroHeadingImage
+        translations {
+          id
+          languages_id
+          heroHeading
+          heroDescription
+          heroCtaHref
+          heroCtaTitle
+        }
+        
+      }
+    }
 `)
 );
 
-const heroImage = img(hero.value.home.heroBackground, undefined, {
+const hero = computed(() => {
+  return {
+    home: {
+      ...heroData.value.home,
+      ...heroData.value.home.translations.find(
+        (t) => t.languages_id.toString() === currentTranslation.value.id
+      ),
+    },
+  };
+});
+const heroImage = img(hero.value.home?.heroBackground, undefined, {
   provider: "directus",
 });
 
-const headingImg = img(hero.value.home.heroHeadingImage, undefined, {
+const headingImg = img(hero.value.home?.heroHeadingImage, undefined, {
   provider: "directus",
 });
 
 const headingTitleElem = computed(() =>
-  hero.value?.home.heroHeading?.split(" ").map((part) =>
+  hero.value?.home?.heroHeading?.split(" ").map((part) =>
     part === "{image}"
       ? h(
           "span",
