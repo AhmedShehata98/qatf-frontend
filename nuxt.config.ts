@@ -33,6 +33,7 @@ export default defineNuxtConfig({
     public: {
       directusUrl: process.env.DIRECTUS_URL,
       directusAccessToken: process.env.DIRECTUS_ACCESS_TOKEN,
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL,
     },
   },
   image: {
@@ -52,9 +53,6 @@ export default defineNuxtConfig({
         static: 24 * 60 * 60 * 1000,
       },
       "/contact-us": {
-        static: 24 * 60 * 60 * 1000,
-      },
-      "/daily-pricing": {
         static: 24 * 60 * 60 * 1000,
       },
       "/privacy-and-terms": {

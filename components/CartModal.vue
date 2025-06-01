@@ -5,12 +5,12 @@
     >
       <span class="flex items-center justify-between w-full mb-8">
         <h3 class="text-xl font-semibold">
-          {{ data?.productsPricing.modalTitle }}
+          {{ cartContent.modalTitle }}
         </h3>
         <button
           type="button"
-          @click="emits('close-modal')"
           class="items-center justify-center size-6"
+          @click="emits('close-modal')"
         >
           <svg
             width="16"
@@ -31,21 +31,24 @@
         class="w-full grid grid-cols-1 items-start justify-start sm:grid-cols-2 gap-4"
       >
         <div class="w-full flex flex-col gap-2">
-          <label for="company-name" class="text-[14px] font-semibold">{{
-            data?.productsPricing.modalCompanyNameLabel
-          }}</label>
+          <label
+            for="company-name"
+            class="capitalize text-[14px] font-semibold"
+            >{{ cartContent.modalCompanyNameLabel }}</label
+          >
           <input
-            type="text"
             id="company-name"
+            v-model="form.companyName"
+            type="text"
             name="company-name"
             class="border border-gray-300 rounded-lg p-2"
-            v-model="form.companyName"
             @blur="touched.companyName = true"
           />
           <span
             v-if="!form.companyName && touched.companyName"
             class="text-red-500 text-xs"
             >{{
+              cartContent.modalCompanyValidationMessage ||
               "يجب أن يكون اسم الشركة أو المؤسسة مكونًا من حرفًا واحدًا على الأقل"
             }}</span
           >
@@ -53,9 +56,9 @@
         <div class="w-full flex flex-col gap-2">
           <label
             for="phone-number"
-            class="text-[14px] font-semibold text-start"
+            class="text-[14px] font-semibold text-start capitalize"
           >
-            {{ data?.productsPricing.modalPhoneNumberLabel }}
+            {{ cartContent.modalPhoneNumberLabel }}
           </label>
           <phone-input
             id="phone-number"
@@ -70,18 +73,24 @@
           <span
             v-if="!form.phone && touched.phone"
             class="text-red-500 text-xs"
-            >{{ "يجب أن يكون رقم الهاتف مكونًا من 10 أرقام" }}</span
+            >{{
+              cartContent.modalPhoneValidationMessage ||
+              "يجب أن يكون رقم الهاتف مكونًا من 10 أرقام"
+            }}</span
           >
         </div>
         <div class="w-full flex flex-col gap-2">
-          <label for="is-order-before" class="text-[14px] font-semibold">
-            {{ data?.productsPricing.modalAskedBeforeFormLabel }}
+          <label
+            for="is-order-before"
+            class="text-[14px] font-semibold capitalize"
+          >
+            {{ cartContent.modalOrderedBefore }}
           </label>
           <select
             id="is-order-before"
+            v-model="form.isOrderedBefore"
             name="is-order-before"
             class="border border-gray-300 rounded-lg py-1 px-2"
-            v-model="form.isOrderedBefore"
             @blur="touched.isOrderedBefore = true"
           >
             <option value="false">لا</option>
@@ -90,35 +99,41 @@
           <span
             v-if="!form.isOrderedBefore && touched.isOrderedBefore"
             class="text-red-500 text-xs"
-            >{{ "يجب اختيار إجابة صالحة" }}</span
+            >{{
+              cartContent.modalOrderValidationMessage ||
+              "يجب اختيار إجابة صالحة"
+            }}</span
           >
         </div>
         <div class="w-full flex flex-col gap-2">
-          <label for="activity" class="text-[14px] font-semibold">{{
-            data?.productsPricing.modalActivityFormLabel
+          <label for="activity" class="text-[14px] font-semibold capitalize">{{
+            cartContent.modalActivityFormLabel
           }}</label>
           <input
-            type="text"
             id="activity"
+            v-model="form.activity"
+            type="text"
             name="activity"
             class="border border-gray-300 rounded-lg p-2"
-            v-model="form.activity"
             @blur="touched.activity = true"
           />
           <span
             v-if="!form.activity && touched.activity"
             class="text-red-500 text-xs"
-            >{{ "يجب أن يكون النشاط مكونًا من حرفًا واحدًا على الأقل" }}</span
+            >{{
+              cartContent.modalActivityValidationMessage ||
+              "يجب أن يكون النشاط مكونًا من حرفًا واحدًا على الأقل"
+            }}</span
           >
         </div>
       </form>
       <ul
-        class="grid grid-flow-row mt-6 gap-3.5 w-full max-h-52 overflow-y-auto"
+        class="grid grid-flow-row mt-6 gap-3.5 w-full max-h-52 overflow-y-auto py-3"
       >
         <cart-item
           v-for="item of cart"
-          :data="item"
           :key="item.id"
+          :data="item"
           @increase-quantity="$emit('increase-quantity', $event)"
           @decrease-quantity="$emit('decrease-quantity', $event)"
           @remove-item="emits('remove-item', $event)"
@@ -127,7 +142,7 @@
       <span
         class="w-full mt-4 flex items-center justify-between font-semibold text-lg text-black"
       >
-        <p>{{ data?.productsPricing.modalTotalLabel }}</p>
+        <p>{{ cartContent.modalTotalLabel }}</p>
         <span class="flex items-center justify-center gap-6">
           <p>
             {{
@@ -140,18 +155,18 @@
         </span>
       </span>
       <button
+        v-if="!isSuccess && !isError"
         type="button"
-        @click="handleSubmit"
         class="flex items-center justify-center gap-2.5 bg-secondary rounded-full py-2 px-5 w-full text-white mt-8 disabled:bg-slate-400"
         :disabled="isLoading || isError || !isValidForm"
-        v-if="!isSuccess && !isError"
+        @click="handleSubmit"
       >
         <span
           v-if="isLoading"
           class="flex border-4 size-8 rounded-full border-slate-600 border-r-transparent animate-spin"
-        ></span>
+        />
         <p v-if="!isLoading">
-          {{ data?.productsPricing.modalSubmitButton }}
+          {{ cartContent.modalSubmitButton }}
         </p>
       </button>
       <button
@@ -206,23 +221,40 @@ const touched = reactive({
   isOrderedBefore: false,
 });
 const { clearCart } = useCart();
-const { data, error } = await useAsyncData(QUERY_KEYS.pages.cartContent, () =>
+const { currentTranslation } = useTranslations();
+const { data } = await useAsyncData(QUERY_KEYS.pages.cartContent, () =>
   $directus.query(
     `
       query {
         productsPricing {
-          modalTitle
-          modalPhoneNumberLabel
-          modalCompanyNameLabel
-          modalAskedBeforeFormLabel
-          modalActivityFormLabel
-          modalTotalLabel
-          modalSubmitButton
+          id
+          translations {
+            id
+            languages_id
+            modalTitle
+            modalPhoneNumberLabel
+            modalCompanyNameLabel
+            modalOrderedBefore
+            modalActivityFormLabel
+            modalTotalLabel
+            modalSubmitButton
+            modalPhoneValidationMessage
+            modalCompanyValidationMessage
+            modalOrderValidationMessage
+            modalActivityValidationMessage
+          }
         }
       }
     `
   )
 );
+const cartContent = computed(() => ({
+  ...data.value?.productsPricing,
+  ...data.value?.productsPricing.translations.find(
+    (translation: { languages_id: number }) =>
+      translation.languages_id.toString() === currentTranslation.value.id
+  ),
+}));
 
 const isValidForm = computed(() => {
   return (

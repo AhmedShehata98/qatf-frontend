@@ -54,7 +54,7 @@ async function createCartItem(cartItem: {
     return res;
   } catch (error) {
     if (import.meta.dev) {
-      console.log(error);
+      console.error(error);
     } else {
       console.error("create cart item failed");
     }

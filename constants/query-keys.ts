@@ -14,6 +14,7 @@ export const QUERY_KEYS = {
     contactUs: "contact",
     products: "products",
     cartContent: "cartContent",
+    error: "error-page",
   },
   globalConfig: {
     appHeader: "appHeader",
@@ -25,5 +26,7 @@ export const QUERY_KEYS = {
     aboutItems: "collections:aboutItems",
     products: "collections:products",
     globalSEO: "collections:globalSEO",
+    productUnits: "collections:productUnits",
+    categories: "collections:categories",
   },
 };

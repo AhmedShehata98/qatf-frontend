@@ -54,7 +54,7 @@ const extractElementAttrs = (element: HTMLElement | Element) => {
 
   function extractAttributes(el: HTMLElement | Element): ExtractAttrsType {
     const attributes: Record<string, string> = {};
-    for (let attr of el.attributes) {
+    for (const attr of el.attributes) {
       if (
         standardAttributes.has(attr.name) ||
         attr.name.startsWith("data-") ||
@@ -96,7 +96,7 @@ const renderNode = (node: ChildNode): any => {
       const codeTag = element.firstElementChild;
       const { attributes: props } = extractElementAttrs(codeTag);
 
-      let lang = props?.class.match(/language-([\w-]+)/)?.[1] || "plaintext";
+      const lang = props?.class.match(/language-([\w-]+)/)?.[1] || "plaintext";
 
       return h(
         "code",
@@ -129,16 +129,14 @@ onMounted(parseHtml);
     <h5 v-if="data && typeof data !== 'string'">
       Oops ,Sorry the data is not a string
     </h5>
-    <template
-      v-if="data && typeof data === 'string'"
-      v-for="(node, index) in parsedNodes"
-      :key="index"
-    >
-      <!-- Handle text nodes differently from element nodes -->
-      <template v-if="node.nodeType === 3">
-        {{ node.textContent }}
-      </template>
-      <component v-else :is="renderNode(node)" />
+    <template v-if="data && typeof data === 'string'">
+      <div v-for="(node, index) in parsedNodes" :key="index">
+        <!-- Handle text nodes differently from element nodes -->
+        <template v-if="node.nodeType === 3">
+          {{ node.textContent }}
+        </template>
+        <component :is="renderNode(node)" v-else />
+      </div>
     </template>
   </div>
 </template>

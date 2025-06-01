@@ -4,14 +4,14 @@
       class="app-container flex items-center justify-between py-2 max-tablet:flex-row-reverse"
     >
       <!-- Logo -->
-      <div>
+      <nuxt-link to="/">
         <nuxt-img
           provider="directus"
           :src="appHeader.logo"
           alt="logo"
           class="h-14 tablet:h-10"
         />
-      </div>
+      </nuxt-link>
       <button
         v-if="!isOpenMenu"
         type="button"

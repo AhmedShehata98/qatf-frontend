@@ -4,16 +4,16 @@
       <p
         class="relative w-fit text-secondary text-base md:text-xs font-bold text-start before:absolute before:bottom-0 before:left-0 before:w-full before:rounded-full before:h-1/2 before:bg-gradient-to-t px-2 py-1 before:from-secondary/60 isolate"
       >
-        {{ data?.contactUs.headingTitle }}
+        {{ contactUs.headingTitle }}
       </p>
       <h3
-        class="text-[44px] md:text-[64px] font-semibold text-black leading-snug"
+        class="text-[44px] md:text-[64px] font-semibold text-black leading-tight lg:max-w-4xl"
       >
-        {{ data?.contactUs.description }}
+        {{ contactUs.description }}
       </h3>
       <ul
         v-if="socialMedia?.socialMedia"
-        class="flex md:flex-col gap-4 md:absolute max-md:self-center max-md:mt-6 left-2"
+        class="flex md:flex-col gap-4 md:absolute max-md:self-center max-md:mt-6 rtl:left-2 ltr:right-2"
       >
         <li v-for="platform of socialMedia.socialMedia" :key="platform.id">
           <NuxtLink :href="platform.platformUrl" target="_blank">
@@ -35,52 +35,61 @@
         class="w-full sm:w-[calc(50%-1.5rem)] flex items-center justify-between gap-5 overflow-hidden flex-wrap"
       >
         <div class="w-full flex flex-col gap-2">
-          <label for="company-name" class="text-[14px] font-semibold">{{
-            data?.contactUs.companyNameLabel
-          }}</label>
+          <label
+            for="company-name"
+            class="text-[14px] font-semibold capitalize"
+            >{{ contactUs.companyNameLabel }}</label
+          >
           <input
-            type="text"
             id="company-name"
+            v-model="form.companyName"
+            type="text"
             name="company-name"
             class="border border-gray-300 rounded-lg p-2"
-            v-model="form.companyName"
             @blur="touched.companyName = true"
           />
           <span
             v-if="touched.companyName && !form.companyName"
             class="text-red-500 text-xs"
             >{{
+              contactUs.companyNameValidationMessage ||
               "يجب أن يكون اسم الشركة أو المؤسسة مكونًا من حرفًا واحدًا على الأقل"
             }}</span
           >
         </div>
         <div class="w-full flex flex-col gap-2">
-          <label for="email" class="text-[14px] font-semibold">
-            {{ data?.contactUs.emailLabel }}</label
-          >
+          <label for="email" class="text-[14px] font-semibold capitalize">
+            {{ contactUs.emailLabel }}
+          </label>
           <input
-            type="email"
             id="email"
+            v-model="form.email"
+            type="email"
             name="email"
             class="border border-gray-300 rounded-lg p-2"
-            v-model="form.email"
             @blur="touched.email = true"
           />
           <span
             v-if="touched.email && !form.email"
             class="text-red-500 text-xs"
-            >{{ "يجب أن يكون عنوان بريد إلكتروني صالحًا" }}</span
+            >{{
+              contactUs.emailValidationMessage ||
+              "يجب أن يكون عنوان بريد إلكتروني صالحًا"
+            }}</span
           >
         </div>
         <div class="w-full flex flex-col gap-2">
-          <label for="phone-number" class="text-[14px] font-semibold">
-            {{ data?.contactUs.phoneNumberLabel }}
+          <label
+            for="phone-number"
+            class="text-[14px] font-semibold capitalize"
+          >
+            {{ contactUs.phoneLabel }}
           </label>
           <phone-input
             id="phone-number"
-            name="phone-number"
             v-model:country-code="countryCode"
             v-model:phone-number="phoneNumber"
+            name="phone-number"
             select-element-id="country-code"
             select-element-name="country-code"
             class="w-full"
@@ -89,44 +98,50 @@
           <span
             v-if="touched.phone && !phoneNumber"
             class="text-red-500 text-xs"
-            >{{ "يجب أن يكون رقم الهاتف مكونًا من 10 أرقام" }}</span
+            >{{
+              contactUs.phoneValidationMessage ||
+              "يجب أن يكون رقم الهاتف مكونًا من 10 أرقام"
+            }}</span
           >
         </div>
       </div>
       <div class="w-full sm:w-[calc(50%-1.5rem)] flex flex-col gap-2">
-        <label for="message" class="text-[14px] font-semibold">{{
-          data?.contactUs.messageLabel
+        <label for="message" class="text-[14px] font-semibold capitalize">{{
+          contactUs.messageLabel
         }}</label>
         <textarea
           id="message"
+          v-model="form.message"
           name="message"
           class="border border-gray-300 rounded-lg p-2"
           rows="9"
-          v-model="form.message"
           @blur="touched.message = true"
-        ></textarea>
+        />
         <span
           v-if="touched.message && !form.message"
           class="text-red-500 text-xs"
-          >{{ "يجب أن يكون الرسالة مكونًا من حرفًا واحدًا على الأقل" }}</span
+          >{{
+            contactUs.messageValidationMessage ||
+            "يجب أن يكون الرسالة مكونًا من حرفًا واحدًا على الأقل"
+          }}</span
         >
       </div>
       <button
-        type="submit"
-        class="w-full flex items-center justify-center sm:w-[calc(50%-1.5rem)] text-white px-4 py-2 rounded-lg mt-4 bg-black disabled:bg-slate-500"
-        :disabled="isLoading"
         v-if="!isSuccess && !isError"
+        type="submit"
+        class="w-full flex items-center justify-center sm:w-[calc(50%-1.5rem)] text-white px-4 py-2 rounded-lg mt-4 bg-black transition-colors hover:bg-secondary disabled:bg-slate-500"
+        :disabled="isLoading"
       >
         <span
           v-if="isLoading"
           class="size-8 rounded-full border-4 border-slate-200 border-r-transparent animate-spin flex"
-        ></span>
-        <p v-else>{{ data?.contactUs.submitButton }}</p>
+        />
+        <p v-else>{{ contactUs.submitButton }}</p>
       </button>
       <button
+        v-if="isSuccess"
         type="button"
         class="w-full flex items-center justify-center gap-2.5 sm:w-[calc(50%-1.5rem)] text-white px-4 py-2 rounded-lg mt-4 bg-emerald-700"
-        v-if="isSuccess"
       >
         <p class="text-center">تم ارسال الطلب بنجاح</p>
         <svg
@@ -145,9 +160,9 @@
         </svg>
       </button>
       <button
+        v-if="isError"
         type="button"
         class="w-full flex items-center justify-center gap-2.5 sm:w-[calc(50%-1.5rem)] text-white px-4 py-2 rounded-lg mt-4 bg-red-700"
-        v-if="isError"
       >
         <p class="text-center max-w-full truncate overflow-hidden">
           {{ errorMsg || "لقد حدث مشكلة ما , برجاء المحاولة لاحقا" }}
@@ -193,20 +208,29 @@ const isLoading = ref<boolean>(false);
 const isError = ref<boolean>(false);
 const isSuccess = ref<boolean>(false);
 const errorMsg = ref<string | null>(null);
+const { currentTranslation } = useTranslations();
 const { $directus } = useNuxtApp();
 const { data } = await useAsyncData(QUERY_KEYS.pages.contactUs, () =>
   $directus.query(
     `
       query {
         contactUs {
-          headingTitle
-          description
-          phoneNumberLabel
-          companyNameLabel
-          emailLabel
-          messageLabel
-          submitButton
-         
+          id
+          translations {
+            id
+            languages_id
+            headingTitle
+            description
+            phoneLabel
+            companyNameLabel
+            emailLabel
+            messageLabel
+            submitButton
+            companyNameValidationMessage
+            emailValidationMessage
+            phoneValidationMessage
+            messageValidationMessage
+          }
         }
       }
     `
@@ -227,6 +251,14 @@ const { data: socialMedia } = await useAsyncData(
     `
     )
 );
+
+const contactUs = computed(() => ({
+  ...data.value?.contactUs,
+  ...data?.value?.contactUs.translations.find(
+    (translation: { languages_id: number }) =>
+      translation.languages_id.toString() === currentTranslation.value.id
+  ),
+}));
 
 watch([isError], () => {
   setTimeout(() => {
@@ -276,9 +308,6 @@ const handleSubmit = async () => {
     form.message = "";
     countryCode.value = "+966";
     phoneNumber.value = "";
-
-    console.log(res);
-    console.log("success");
   } catch (error: any) {
     isSuccess.value = false;
     isError.value = true;
@@ -289,7 +318,7 @@ const handleSubmit = async () => {
       console.error("submit form mutation error", errorMsg);
     } else {
       errorMsg.value = "submit error please try again later";
-      console.log("submitForm error ");
+      console.error("submitForm error ", errorMsg);
     }
   }
 };

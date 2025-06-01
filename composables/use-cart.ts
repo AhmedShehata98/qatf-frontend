@@ -40,13 +40,13 @@ export function useCart() {
     safeToStorage("cart", cart.value);
   };
   const removeFromCart = (product: Product) => {
-    cart.value = cart.value.filter((item: any) => item.id !== product.id);
+    cart.value = cart.value.filter((item) => item.id !== product.id);
     safeToStorage("cart", cart.value);
   };
 
   const isInTheCart = (product: Product) => {
     if (cart.value.length === 0) return false;
-    return cart.value.some((item: any) => item.id === product.id);
+    return cart.value.some((item) => item.id === product.id);
   };
 
   const increaseItemQuantity = (product: Product): void => {

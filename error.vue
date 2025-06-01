@@ -1,20 +1,39 @@
 <template>
   <section
-    style="
-      background-image: url('/images/error-page-bg.webp');
-      min-height: 100dvh;
-      height: 100dvh;
-    "
+    :style="{
+      backgroundImage: `url(${
+        errorContent?.error?.background
+          ? img(errorContent?.error?.background, undefined, {
+              provider: 'directus',
+            })
+          : '/images/error-page-bg.webp'
+      })`,
+      minHeight: '100dvh',
+      height: '100dvh',
+    }"
     class="relative w-full flex flex-col items-center justify-start bg-fixed bg-center bg-repeat"
   >
     <span
       class="inline-block absolute w-full h-full top-0 left-0 bg-black/50 z-10"
-    ></span>
+    />
     <div
       class="app-container flex flex-col items-start justify-center h-full mt-24 z-10"
     >
       <template v-if="error?.statusCode === 404">
+        <figure
+          v-if="errorContent?.error?.notFoundedErrorImage"
+          class="flex flex-col items-center justify-center w-72 mb-8"
+        >
+          <nuxt-img
+            v-if="errorContent?.error?.notFoundedErrorImage"
+            provider="directus"
+            :src="errorContent?.error?.notFoundedErrorImage"
+            alt="notFoundedErrorImage"
+            class="w-full object-cover"
+          />
+        </figure>
         <svg
+          v-else
           width="354"
           height="140"
           viewBox="0 0 384 140"
@@ -74,24 +93,30 @@
       </template>
       <span class="flex flex-col items-start justify-start gap-3 mt-8">
         <h2 class="text-5xl font-semibold text-white">
-          عذراً, الصفحة غير موجودة أو حصل خطأ ما
+          {{
+            errorContent?.error?.notFoundedErrorMessage ||
+            " عذراً, الصفحة غير موجودة أو حصل خطأ ما"
+          }}
         </h2>
         <p class="font-semibold text-white/80">
-          الصفحة التي تبحث عنها غير متاحة أو حُذفت. حاول الانتقال إلى الصفحة
-          الرئيسية باستخدام الزر أدناه.
+          {{
+            errorContent?.error?.notFoundedErrorDescription ||
+            " الصفحة التي تبحث عنها غير متاحة أو حُذفت. حاول الانتقال إلى الصفحة الرئيسية باستخدام الزر أدناه."
+          }}
         </p>
       </span>
       <NuxtLink
-        href="/"
-        class="bg-secondary px-8 flex items-center justify-center gap-2 py-3 rounded-full text-white mt-10"
+        :href="errorContent?.error?.buttonHref || '/'"
+        class="bg-secondary px-8 ltr:flex-row-reverse flex items-center justify-center gap-2 py-3 rounded-full text-white mt-10"
       >
-        <p>القائمة الرئيسية</p>
+        <p>{{ errorContent?.error?.buttonTitle || "القائمة الرئيسية" }}</p>
         <svg
           width="20"
           height="20"
           viewBox="0 0 20 20"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
+          class="rtl:rotate-180"
         >
           <path
             d="M9.52539 4.50977L13.8281 8.81348L14.6816 9.66699H3.83301V10.334H14.6797L13.8281 11.1875L9.53125 15.4912L10 15.96L15.959 10L9.99805 4.03906L9.52539 4.50977Z"
@@ -113,5 +138,44 @@
   </section>
 </template>
 <script setup lang="ts">
+import { QUERY_KEYS } from "./constants/query-keys";
+
+const { currentTranslation } = useTranslations();
+const img = useImage();
+const { $directus } = useNuxtApp();
+const { data } = useAsyncData(QUERY_KEYS.pages.error, () =>
+  $directus.query(`
+  query {
+    error {
+      id
+      translations {
+        id
+        languages_id
+        internalErrorMessage
+        internalErrorDescription
+        notFoundedErrorMessage
+        notFoundedErrorDescription
+        buttonTitle
+        buttonHref
+      }
+      background
+      internalErrorImage
+      notFoundedErrorImage
+    }
+  }
+`)
+);
+const errorContent = computed(() => ({
+  ...(data.value || {}),
+  error: {
+    ...data.value?.error?.translations.find(
+      (t: { languages_id: number }) =>
+        t.languages_id.toString() === currentTranslation.value.id
+    ),
+    internalErrorImage: data.value?.error?.internalErrorImage,
+    notFoundedErrorImage: data.value?.error?.notFoundedErrorImage,
+  },
+}));
+
 const error = useError();
 </script>

@@ -4,11 +4,11 @@
   >
     <div class="relative">
       <span
-        v-if="data.tags && data.tags.length"
+        v-if="product.tags && product.tags.length"
         class="max-w-full absolute top-0 right-0 p-2 md:px-3 md:py-4 flex gap-1 md:gap-2 rtl:right-2 rtl:left-auto ltr:left-2 ltr:right-auto max-sm:flex-wrap"
       >
         <span
-          v-for="tag in data.tags"
+          v-for="tag in product.tags"
           :key="tag"
           :class="tagClass(tag)"
           class="text-xs font-bold p-1 md:px-2 md:py-1 rounded"
@@ -18,16 +18,16 @@
       </span>
       <nuxt-img
         provider="directus"
-        :src="data.image"
-        :alt="data.title"
+        :src="product.image"
+        :alt="product.title"
         class="rounded-[20px] max-w-full min-w-full min-h-[100px] tablet:min-h-[250px] object-cover"
       />
       <button
         class="add-btn absolute left-1 bottom-1 tablet:left-4 tablet:bottom-4 bg-primary text-white rounded-md md:rounded-[10px] size-7 md:w-9 md:h-9 flex items-center justify-center mt-2 hover:bg-primary transition-colors"
         :class="isInTheCart ? 'bg-slate-500' : 'bg-primary'"
-        @click="$emit('on-add-to-cart', data)"
         :disabled="Boolean(isInTheCart)"
         title="Add to cart"
+        @click="$emit('on-add-to-cart', product)"
       >
         <svg
           v-if="!isInTheCart"
@@ -51,27 +51,30 @@
           width="24"
           height="24"
           viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="lucide lucide-check-icon lucide-check"
+          title="Remove from cart"
+          @click="$emit('on-remove-from-cart', product)"
         >
-          <path d="M20 6 9 17l-5-5" />
+          <path
+            fill="currentColor"
+            fill-rule="evenodd"
+            d="M8.106 2.553A1 1 0 0 1 9 2h6a1 1 0 0 1 .894.553L17.618 6H20a1 1 0 1 1 0 2h-1v11a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3V8H4a1 1 0 0 1 0-2h2.382zM14.382 4l1 2H8.618l1-2zM11 11a1 1 0 1 0-2 0v6a1 1 0 1 0 2 0zm4 0a1 1 0 1 0-2 0v6a1 1 0 1 0 2 0z"
+            clip-rule="evenodd"
+          />
         </svg>
       </button>
     </div>
     <div class="mt-2 text-center">
-      <div class="font-bold text-sm md:text-base mb-1">{{ data.title }}</div>
+      <div class="font-bold text-sm md:text-base mb-1">{{ product.title }}</div>
       <div
         class="text-gray-500 text-xs md:text-sm mb-1 flex items-center justify-center gap-2.5"
       >
         <span class="flex items-center justify-center gap-1">
-          <p class="text-primary">{{ data.price }}</p>
-          <p class="text-primary">{{ currencyMap[data.currency] }}</p>
+          <p class="text-primary">{{ product.price }}</p>
+          <p v-if="product.currency" class="text-primary">
+            {{ currencyMap[product.currency] }}
+          </p>
         </span>
-        <span v-if="data.unit">({{ unitMap[data.unit] || "--" }})</span>
+        <span v-if="product.unit">({{ unitMap[product.unit] || "--" }})</span>
       </div>
     </div>
   </div>
@@ -79,15 +82,29 @@
 
 <script setup lang="ts">
 import { currencyMap, unitMap, type Product } from "@/types/product";
-import { computed } from "vue";
 
-defineProps<{
+const { isInTheCart: inCart, cart } = useCart();
+const { currentTranslation } = useTranslations();
+const props = defineProps<{
   data: Product;
-  isInTheCart: boolean;
 }>();
+
+const product = computed(() => ({
+  ...props.data,
+  ...props.data.translations.find(
+    (translation) =>
+      translation.languages_id.toString() === currentTranslation.value.id
+  ),
+  id: props.data.id,
+}));
+
+const isInTheCart = computed(
+  () => cart.value.find((i) => i.id === props.data.id) !== undefined
+);
 
 defineEmits<{
   (e: "on-add-to-cart", data: Product): void;
+  (e: "on-remove-from-cart", data: Product): void;
 }>();
 
 function tagClass(tag: string) {

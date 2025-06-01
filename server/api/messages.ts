@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     });
     return { data: message, success: true };
   } catch (error: any) {
-    console.log("error", error);
+    console.error("error", error);
     return createError({
       statusCode: 500,
       statusMessage: error.message,
