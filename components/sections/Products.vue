@@ -152,10 +152,6 @@ const mappedProductNotificationMessages = computed(() => {
   };
 });
 
-console.log(
-  "mappedProductNotificationMessages:",
-  mappedProductNotificationMessages.value
-);
 const { data: productsData } = await useAsyncData(
   QUERY_KEYS.pages.home.products,
   () =>

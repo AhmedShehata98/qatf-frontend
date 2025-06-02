@@ -127,8 +127,6 @@ const product = computed(() => ({
   ),
 }));
 
-console.log(props.data);
-console.log(product.value);
 // Define emits for updating quantity or unit
 const emit = defineEmits<{
   (e: "increase-quantity", product: CartType): void;

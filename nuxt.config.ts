@@ -68,6 +68,9 @@ export default defineNuxtConfig({
   },
   vite: {
     plugins: [tailwindcss() as unknown as Plugin],
+    server: {
+      allowedHosts: ["bb74-62-114-130-13.ngrok-free.app"],
+    },
   },
   nitro: {
     routeRules: {

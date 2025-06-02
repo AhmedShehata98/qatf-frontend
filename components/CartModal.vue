@@ -312,7 +312,7 @@ const handleSubmit = async () => {
     });
     isLoading.value = false;
     if (!cart) {
-      console.log("create cart failed");
+      console.error("create cart failed");
       return;
     }
 
@@ -320,7 +320,7 @@ const handleSubmit = async () => {
     items.forEach(async (item) => {
       isLoading.value = true;
       if (!item.id) {
-        console.log("cart item has no id");
+        console.error("cart item has no id");
         return;
       }
       await $fetch("/api/cart-items", {
@@ -346,7 +346,7 @@ const handleSubmit = async () => {
     errorMsg.value = error instanceof Error ? error.message : "Unknown error";
     isLoading.value = false;
     if (import.meta.dev) {
-      console.log(error);
+      console.error(error);
     } else {
       console.error("create cart failed");
     }

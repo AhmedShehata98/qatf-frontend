@@ -436,7 +436,6 @@ const {
   }
 );
 
-console.log("products error :", error.value);
 const productsPricing = computed(() => ({
   ...data.value?.productsPricing,
   ...data?.value?.productsPricing.translations.find(

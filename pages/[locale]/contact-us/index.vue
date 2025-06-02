@@ -45,6 +45,7 @@
             v-model="form.companyName"
             type="text"
             name="company-name"
+            required
             class="border border-gray-300 rounded-lg p-2"
             @blur="touched.companyName = true"
           />
@@ -66,6 +67,7 @@
             v-model="form.email"
             type="email"
             name="email"
+            required
             class="border border-gray-300 rounded-lg p-2"
             @blur="touched.email = true"
           />
@@ -92,6 +94,7 @@
             name="phone-number"
             select-element-id="country-code"
             select-element-name="country-code"
+            required
             class="w-full"
             @blur="touched.phone = true"
           />
@@ -114,6 +117,7 @@
           v-model="form.message"
           name="message"
           class="border border-gray-300 rounded-lg p-2"
+          required
           rows="9"
           @blur="touched.message = true"
         />
@@ -130,20 +134,28 @@
         v-if="!isSuccess && !isError"
         type="submit"
         class="w-full flex items-center justify-center sm:w-[calc(50%-1.5rem)] text-white px-4 py-2 rounded-lg mt-4 bg-black transition-colors hover:bg-secondary disabled:bg-slate-500"
-        :disabled="isLoading"
+        :disabled="
+          isLoading ||
+          !phoneNumber ||
+          !form.email ||
+          !form.companyName ||
+          !form.message
+        "
       >
         <span
           v-if="isLoading"
           class="size-8 rounded-full border-4 border-slate-200 border-r-transparent animate-spin flex"
         />
-        <p v-else>{{ contactUs.submitButton }}</p>
+        <p v-else>{{ contactUs.submitButton || "ارسال" }}</p>
       </button>
       <button
         v-if="isSuccess"
         type="button"
         class="w-full flex items-center justify-center gap-2.5 sm:w-[calc(50%-1.5rem)] text-white px-4 py-2 rounded-lg mt-4 bg-emerald-700"
       >
-        <p class="text-center">تم ارسال الطلب بنجاح</p>
+        <p class="text-center">
+          {{ contactUs.formSendSuccessMessage || "تم ارسال الطلب بنجاح" }}
+        </p>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -165,7 +177,11 @@
         class="w-full flex items-center justify-center gap-2.5 sm:w-[calc(50%-1.5rem)] text-white px-4 py-2 rounded-lg mt-4 bg-red-700"
       >
         <p class="text-center max-w-full truncate overflow-hidden">
-          {{ errorMsg || "لقد حدث مشكلة ما , برجاء المحاولة لاحقا" }}
+          {{
+            errorMsg ||
+            contactUs.formSendErrorMessage ||
+            "لقد حدث مشكلة ما , برجاء المحاولة لاحقا"
+          }}
         </p>
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -193,7 +209,6 @@ import { QUERY_KEYS } from "~/constants/query-keys";
 const form = reactive({
   companyName: "",
   email: "",
-  phone: "",
   message: "",
 });
 const touched = reactive({
@@ -230,6 +245,8 @@ const { data } = await useAsyncData(QUERY_KEYS.pages.contactUs, () =>
             emailValidationMessage
             phoneValidationMessage
             messageValidationMessage
+            formSendSuccessMessage
+            formSendErrorMessage
           }
         }
       }
@@ -280,7 +297,7 @@ const handleSubmit = async () => {
   touched.phone = false;
   touched.message = false;
   try {
-    const res = await $fetch<{
+    await $fetch<{
       data: {
         error: boolean;
         message: string;
@@ -305,17 +322,19 @@ const handleSubmit = async () => {
     errorMsg.value = null;
     form.companyName = "";
     form.email = "";
-    form.phone = "";
     form.message = "";
     countryCode.value = "+966";
     phoneNumber.value = "";
-  } catch (error: any) {
+  } catch (error: unknown) {
     isSuccess.value = false;
     isError.value = true;
     isLoading.value = false;
     if (import.meta.dev) {
-      errorMsg.value = error.message;
-      console.error("submitForm error", error.message);
+      errorMsg.value = error instanceof Error ? error.message : "unknown error";
+      console.error(
+        "submitForm error",
+        error instanceof Error ? error.message : "__--__"
+      );
       console.error("submit form mutation error", errorMsg);
     } else {
       errorMsg.value = "submit error please try again later";
