@@ -34,6 +34,31 @@ export default defineNuxtConfig({
       directusUrl: process.env.DIRECTUS_URL,
       directusAccessToken: process.env.DIRECTUS_ACCESS_TOKEN,
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL,
+      i18n: {
+        defaultLocale: {
+          id: "1",
+          name: "العربية",
+          iso: "ar",
+          code: "ar-SA",
+          dir: "rtl",
+        },
+        locales: {
+          "ar-SA": {
+            id: "1",
+            name: "العربية",
+            iso: "ar",
+            code: "ar-SA",
+            dir: "rtl",
+          },
+          "en-US": {
+            id: "2",
+            name: "English",
+            iso: "en",
+            code: "en-US",
+            dir: "ltr",
+          },
+        },
+      },
     },
   },
   image: {

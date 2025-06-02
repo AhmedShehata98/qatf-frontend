@@ -43,7 +43,7 @@
         <NuxtLink
           v-for="link of appHeader.navLinks"
           :key="link.id"
-          :to="link.path"
+          :to="pathWithLocale(link.path)"
           class="header__nav_link"
           :class="
             $route.path.endsWith(link.path) ? 'header__nav_link_active' : ''
@@ -95,20 +95,21 @@
           class="flex flex-row items-center justify-start gap-2 border border-transparent focus-within:border-gray-300 px-3 rounded-full"
         >
           <select
-            v-model="currentTranslation"
+            :value="currentLocale"
             class="focus:outline-none px-2 py-1 text-sm"
+            @change="setLocale($event?.target?.value)"
           >
             <option
-              v-for="translation in translations"
-              :key="translation.id"
-              :value="translation"
+              v-for="locale in locales"
+              :key="locale.code"
+              :value="locale.code"
             >
-              {{ translation.name }}
+              {{ locale.name }}
             </option>
           </select>
         </div>
         <NuxtLink
-          :href="appHeader.ctaButtonHref"
+          :href="pathWithLocale(appHeader.ctaButtonHref)"
           class="px-5 py-2 border rounded-full border-black text-black hover:border-primary hover:text-primary transition-colors"
         >
           {{ appHeader.ctaButtonLabel }}
@@ -124,22 +125,42 @@
           <template v-for="link of appHeader.websiteLinks" :key="link.id">
             <NuxtLink
               v-if="link.path && !link.path.match(/^\[.*\]$/)"
-              :to="link.path"
+              :to="pathWithLocale(link.path)"
               class="header__nav_link"
               :class="
                 $route.path.endsWith(link.path) ? 'header__nav_link_active' : ''
               "
-              >{{ link.title }}</NuxtLink
             >
+              <p class="w-full text-start" @click="isOpenMenu = false">
+                {{ link.title }}
+              </p>
+            </NuxtLink>
             <button
               v-if="!link.path || link.path.match(/^\[.*\]$/)"
               type="button"
-              class="py-1.5 px-3 text-start"
+              class="py-1.5 px-3 text-start capitalize"
               @click="handleShowCartModal"
             >
               {{ link.title }}
             </button>
           </template>
+          <div
+            class="w-full flex flex-row items-center justify-start gap-2 border border-transparent focus-within:bg-primary/20 focus-within:border-gray-300 px-2"
+          >
+            <select
+              :value="currentLocale"
+              class="focus:outline-none ltr:ps-2 rtl:pe-2 py-1 text-sm w-1/4"
+              @change="setLocale($event?.target?.value)"
+            >
+              <option
+                v-for="locale in locales"
+                :key="locale.code"
+                :value="locale.code"
+              >
+                {{ locale.name }}
+              </option>
+            </select>
+          </div>
         </nav>
       </div>
     </div>
@@ -152,8 +173,8 @@ const isOpenMenu = shallowRef(false);
 const { showModal } = useShowCartModal();
 const { getCartQuantity } = useCart();
 const { $directus } = useNuxtApp();
-const { currentTranslation, translations } = useTranslations();
-
+const { locales, setLocale, currentLocale, getLocaleObject, pathWithLocale } =
+  useI18n();
 const handleShowCartModal = () => {
   isOpenMenu.value = false;
   showModal();
@@ -203,14 +224,15 @@ const appHeader = computed(() => {
     ...data.value?.appHeader,
     ...data.value?.appHeader?.translations.find(
       (t: { languages_id: number; ctaButtonLabel: string }) =>
-        t.languages_id.toString() === currentTranslation.value.id
+        t.languages_id.toString() === getLocaleObject(currentLocale.value).id
     ),
     navLinks: data.value?.appHeader?.navLinks.map(
       (link: { translations: { languages_id: number; title: string }[] }) => ({
         ...link,
         ...link.translations.find(
           (t: { languages_id: number; title: string }) =>
-            t.languages_id.toString() === currentTranslation.value.id
+            t.languages_id.toString() ===
+            getLocaleObject(currentLocale.value).id
         ),
       })
     ),
@@ -219,7 +241,8 @@ const appHeader = computed(() => {
         ...link,
         ...link.translations.find(
           (t: { languages_id: number; title: string }) =>
-            t.languages_id.toString() === currentTranslation.value.id
+            t.languages_id.toString() ===
+            getLocaleObject(currentLocale.value).id
         ),
       })
     ),

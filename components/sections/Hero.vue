@@ -8,7 +8,7 @@
       class="app-container relative z-10 text-center flex flex-col items-center"
     >
       <span
-        class="tablet:max-w-[70%] mb-8 flex items-center justify-center gap-4 flex-wrap"
+        class="tablet:max-w-[70%] tablet:ltr:max-w-[85%] mb-8 flex items-center justify-center gap-4 flex-wrap"
       >
         <component
           :is="elem"
@@ -17,12 +17,12 @@
         />
       </span>
 
-      <p class="max-w-2xl mx-auto mb-8 text-lg text-white/70">
+      <p class="max-w-2xl mx-auto mb-8 ltr:text-base text-lg text-white/70">
         {{ hero.home?.heroDescription }}
       </p>
       <NuxtLink
-        :href="hero.home?.heroCtaHref"
         class="bg-white text-primary font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transition-colors"
+        :href="pathWithLocale(hero.home?.heroCtaHref)"
       >
         {{ hero.home?.heroCtaTitle }}
       </NuxtLink>
@@ -35,7 +35,7 @@ import { NuxtLink } from "#components";
 import { QUERY_KEYS } from "~/constants/query-keys";
 const img = useImage();
 const { $directus } = useNuxtApp();
-const { currentTranslation } = useTranslations();
+const { currentLocale, getLocaleObject, pathWithLocale } = useI18n();
 const { data: heroData } = await useAsyncData(QUERY_KEYS.pages.home.hero, () =>
   $directus.query(`
     query {
@@ -61,7 +61,8 @@ const hero = computed(() => {
     home: {
       ...heroData.value.home,
       ...heroData.value.home.translations.find(
-        (t) => t.languages_id.toString() === currentTranslation.value.id
+        (t) =>
+          t.languages_id.toString() === getLocaleObject(currentLocale.value).id
       ),
     },
   };
@@ -81,14 +82,20 @@ const headingTitleElem = computed(() =>
           "span",
           {
             class:
-              "inline-block p-1 w-48 rounded-full bg-white/50 backdrop-blur-sm",
+              "inline-block p-1 w-48 rounded-full bg-white/50 backdrop-blur-sm ",
           },
           h("img", {
             src: headingImg,
             class: "w-full h-16 object-cover rounded-full",
           })
         )
-      : h("p", { class: "md:text-5xl text-[44px] font-bold" }, part)
+      : h(
+          "p",
+          {
+            class: "md:text-5xl text-[44px] md:ltr:text-[44px]/6 font-bold",
+          },
+          part
+        )
   )
 );
 </script>

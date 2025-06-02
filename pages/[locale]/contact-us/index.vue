@@ -208,7 +208,7 @@ const isLoading = ref<boolean>(false);
 const isError = ref<boolean>(false);
 const isSuccess = ref<boolean>(false);
 const errorMsg = ref<string | null>(null);
-const { currentTranslation } = useTranslations();
+const { currentLocale, getLocaleObject } = useI18n();
 const { $directus } = useNuxtApp();
 const { data } = await useAsyncData(QUERY_KEYS.pages.contactUs, () =>
   $directus.query(
@@ -256,7 +256,8 @@ const contactUs = computed(() => ({
   ...data.value?.contactUs,
   ...data?.value?.contactUs.translations.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ),
 }));
 

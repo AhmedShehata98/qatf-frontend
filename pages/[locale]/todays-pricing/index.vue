@@ -7,7 +7,7 @@
         {{ productsPricing.headingTitle }}
       </p>
       <h3
-        class="text-[32px] md:text-[44px] font-semibold text-black leading-tight"
+        class="text-[20px] md:text-[44px] font-semibold text-black leading-tight"
       >
         {{ productsPricing.headingDescription }}
       </h3>
@@ -49,7 +49,7 @@
           type="search"
           name="search-input"
           :placeholder="productsPricing.searchInputPlaceholder"
-          class="w-full focus:outline-none bg-inherit text-black px-3 h-full"
+          class="w-full focus:outline-none bg-inherit text-black px-3 ltr:py-2 h-full"
         />
       </span>
       <div
@@ -62,19 +62,19 @@
             id="unit"
             v-model="selectedUnit"
             name="unit"
-            class="bg-primary text-white pe-1.5 md:pe-3 py-1 sm:py-2 rounded-full focus:outline-none max-sm:text-sm"
+            class="bg-primary text-white pe-1.5 md:pe-3 py-1 sm:py-2 rounded-full focus:outline-none max-sm:text-sm ltr:py-2"
           >
-            <option value="none" disabled>
+            <option value="none" disabled class="disabled:!text-white">
               {{ productsPricing.unitSelectLabel }}
             </option>
-            <option v-for="unit of unitMap" :key="unit.id" :value="unit.value">
+            <option v-for="unit of mappedUnits" :key="unit.id" :value="unit.id">
               {{ unit.name }}
             </option>
           </select>
         </span>
         <div class="flex items-center justify-center gap-2">
           <span
-            class="flex items-center justify-center px-5 bg-primary rounded-full"
+            class="flex items-center justify-center flex-1 px-5 bg-primary rounded-full ltr:py-2"
           >
             <select
               id="quantity"
@@ -86,7 +86,7 @@
                 {{ productsPricing.categoriesLabel }}
               </option>
               <option
-                v-for="category of categoryMap"
+                v-for="category of mappedCategory"
                 :key="category.id"
                 :value="category.id"
               >
@@ -97,7 +97,7 @@
           <button
             v-if="selectedCategory !== 'none' || selectedUnit !== 'none'"
             type="button"
-            class="flex items-center justify-center bg-red-200 size-12 rounded-full hover:bg-red-300 transition-colors"
+            class="flex items-center justify-center bg-sky-200 shrink-0 max-md:size-10 size-12 rounded-full hover:bg-sky-300 transition-colors"
             title="Clear filters"
             @click="
               () => {
@@ -121,7 +121,7 @@
         </div>
       </div>
     </form>
-    <template v-if="groupedProducts">
+    <template v-if="groupedProducts && Object.keys(groupedProducts).length > 0">
       <div
         v-for="[title, items] of Object.entries(groupedProducts)"
         :key="`${title}_${items?.length}`"
@@ -147,9 +147,26 @@
         </ul>
       </div>
     </template>
-    <h3 v-else class="text-xl text-secondary/80 font-bold text-center py-24">
-      {{ productsPricing.noProductsMessage }}
-    </h3>
+    <span v-else class="flex items-center justify-center flex-col gap-4 py-32">
+      <span
+        class="flex items-center justify-center p-4 bg-primary/20 backdrop-blur-md text-5xl shrink-0 rounded-full"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="48"
+          height="48"
+          viewBox="0 0 28 28"
+        >
+          <path
+            fill="currentColor"
+            d="M10.75 15A2.25 2.25 0 0 1 13 17.25v5.5A2.25 2.25 0 0 1 10.75 25h-5.5A2.25 2.25 0 0 1 3 22.75v-5.5A2.25 2.25 0 0 1 5.25 15zm12 0A2.25 2.25 0 0 1 25 17.25v5.5A2.25 2.25 0 0 1 22.75 25h-5.5A2.25 2.25 0 0 1 15 22.75v-5.5A2.25 2.25 0 0 1 17.25 15zm-12-12A2.25 2.25 0 0 1 13 5.25v5.5A2.25 2.25 0 0 1 10.75 13h-5.5A2.25 2.25 0 0 1 3 10.75v-5.5A2.25 2.25 0 0 1 5.25 3zm12 0A2.25 2.25 0 0 1 25 5.25v5.5A2.25 2.25 0 0 1 22.75 13h-5.5A2.25 2.25 0 0 1 15 10.75v-5.5A2.25 2.25 0 0 1 17.25 3z"
+          />
+        </svg>
+      </span>
+      <h3 class="text-2xl text-secondary/80 font-bold text-center">
+        {{ productsPricing.noProductsMessage }}
+      </h3>
+    </span>
 
     <!-- product add to cart bar -->
     <div
@@ -192,7 +209,7 @@
       </div>
     </div>
     <div
-      class="w-full flex items-center justify-start gap-4 bg-red-700 fixed bottom-0 left-0 py-3 transition-transform duration-500 ease-in-out translate-y-full"
+      class="w-full flex items-center justify-start gap-4 bg-sky-700 fixed bottom-0 left-0 py-3 transition-transform duration-500 ease-in-out translate-y-full"
       :class="{
         '!translate-y-0': isOpenNotificationBar && cartOperation === 'remove',
       }"
@@ -233,65 +250,44 @@ import type { Product } from "~/types/product";
 
 const { $directus } = useNuxtApp();
 const { addToCart, removeFromCart } = useCart();
-const selectedProductName = shallowRef<string | null>(null);
-const isOpenNotificationBar = shallowRef(false);
-const cartOperation = shallowRef<"add" | "remove" | null>(null);
+const { currentLocale, getLocaleObject } = useI18n();
+const {
+  pushNotificationBar,
+  isOpenNotificationBar,
+  cartOperation,
+  selectedProductName,
+} = useCartNotificationBar();
 const searchQuery = shallowRef(null);
 const debouncedSearchQuery = useDebounce(searchQuery, 500);
 const selectedCategory = shallowRef<string | null>("none");
 const selectedUnit = shallowRef<string | null>("none");
-let timeoutId: NodeJS.Timeout | null = null;
 const handleAddToCart = (product: Product) => {
   addToCart(product);
-  selectedProductName.value =
-    product.translations.find(
-      (translation: { languages_id: number }) =>
-        translation.languages_id.toString() ===
-        useTranslations().currentTranslation.value.id
-    )?.title || null;
-  isOpenNotificationBar.value = true;
-  cartOperation.value = "add";
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-  timeoutId = setTimeout(() => {
-    isOpenNotificationBar.value = false;
-  }, 5000);
+  (translation: { languages_id: number }) =>
+    translation.languages_id.toString() ===
+    getLocaleObject(currentLocale.value).id;
+  pushNotificationBar("add", product);
 };
 const handleRemoveFromCart = (product: Product) => {
   removeFromCart(product);
-  selectedProductName.value =
-    product.translations.find(
-      (translation: { languages_id: number }) =>
-        translation.languages_id.toString() ===
-        useTranslations().currentTranslation.value.id
-    )?.title || null;
-  isOpenNotificationBar.value = true;
-  cartOperation.value = "remove";
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-  timeoutId = setTimeout(() => {
-    isOpenNotificationBar.value = false;
-  }, 5000);
+  pushNotificationBar("remove", product);
 };
 
 const img = useImage();
-const { currentTranslation } = useTranslations();
 const { data: productUnits } = await useAsyncData(
   QUERY_KEYS.collections.productUnits,
   () =>
     $directus.query(`
-    query { 
-      product_units { 
-        id 
+    query {
+      product_units {
+        id
         translations {
-          id 
-					languages_id 
-					name 
-          value 
+          id
+					languages_id
+					name
+          value
 				}
-      } 
+      }
     }
   `)
 );
@@ -300,16 +296,16 @@ const { data: categories } = await useAsyncData(
   QUERY_KEYS.collections.categories,
   () =>
     $directus.query(`
-      query { 
-        category { 
-        id 
+      query {
+        category {
+        id
           translations {
-            id 
-            languages_id 
-            name 
+            id
+            languages_id
+            name
             description
           }
-        } 
+        }
       }
     `)
 );
@@ -348,39 +344,50 @@ const { data } = await useAsyncData(QUERY_KEYS.pages.products, () =>
   )
 );
 
-const { data: products, refresh: refreshProductsCollection } =
-  await useAsyncData<{
-    products: Product[];
-    products_aggregated: { count: { id: number } }[];
-  }>(
-    QUERY_KEYS.collections.products,
-    () =>
-      $directus.query(
-        `
+const {
+  data: products,
+  refresh: refreshProductsCollection,
+  error,
+} = await useAsyncData<{
+  products: Product[];
+  products_aggregated: { count: { id: number } }[];
+}>(
+  QUERY_KEYS.collections.products,
+  () =>
+    $directus.query(
+      `
     query ($filter: products_filter) {
       products (filter: $filter) {
-        id
-        price
-        stock
-        image
-        tags
-        translations {
-          id
-          languages_id
-          title
+				id
+				translations {
+					id
+					languages_id
+					title
           currency
-          unit
-        }
-        category {
-          id
-          translations {
-            id
-            languages_id
-            name
-            description
-          }
-        }
-      }
+				}
+				price
+				stock
+				image
+				tags
+				unit {
+					id
+					translations {
+						id
+						languages_id
+						name
+						value
+					}
+				}
+				category {
+					id
+					translations {
+						id
+						languages_id
+						name
+						description
+					}
+				}
+			}
       products_aggregated {
         count {
           id
@@ -388,42 +395,54 @@ const { data: products, refresh: refreshProductsCollection } =
       }
     }
   `,
-        {
-          filter: {
-            translations: {
-              ...(debouncedSearchQuery.value
-                ? {
-                    title: {
-                      _contains: debouncedSearchQuery.value,
+      {
+        filter: {
+          unit: {
+            ...(selectedUnit.value !== "none"
+              ? {
+                  translations: {
+                    id: {
+                      _eq: selectedUnit.value,
                     },
-                  }
-                : {}),
-            },
-            category: {
-              translations: {
-                ...(selectedCategory.value !== "none"
-                  ? {
-                      id: {
-                        _eq: selectedCategory.value,
-                      },
-                    }
-                  : {}),
-              },
-            },
+                  },
+                }
+              : {}),
           },
-        }
-      ),
-    {
-      watch: [debouncedSearchQuery, selectedCategory, selectedUnit],
-      immediate: true,
-    }
-  );
+          category: {
+            ...(selectedCategory.value !== "none"
+              ? {
+                  translations: {
+                    id: {
+                      _eq: selectedCategory.value,
+                    },
+                  },
+                }
+              : {}),
+          },
+          translations: {
+            ...(debouncedSearchQuery.value
+              ? {
+                  title: {
+                    _contains: debouncedSearchQuery.value,
+                  },
+                }
+              : {}),
+          },
+        },
+      }
+    ),
+  {
+    watch: [debouncedSearchQuery, selectedCategory, selectedUnit],
+  }
+);
 
+console.log("products error :", error.value);
 const productsPricing = computed(() => ({
   ...data.value?.productsPricing,
   ...data?.value?.productsPricing.translations.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ),
 }));
 
@@ -434,13 +453,14 @@ const groupedProducts = computed(() => {
       (item) =>
         item.category?.translations.find(
           (translation: { languages_id: number }) =>
-            translation.languages_id.toString() === currentTranslation.value.id
+            translation.languages_id.toString() ===
+            getLocaleObject(currentLocale.value).id
         )?.name || ""
     ) || {}
   );
 });
 
-const unitMap = computed(() => {
+const mappedUnits = computed(() => {
   return productUnits.value?.product_units.map(
     (unit: {
       id: string;
@@ -454,13 +474,14 @@ const unitMap = computed(() => {
       ...unit,
       ...unit.translations.find(
         (translation: { languages_id: number }) =>
-          translation.languages_id.toString() === currentTranslation.value.id
+          translation.languages_id.toString() ===
+          getLocaleObject(currentLocale.value).id
       ),
     })
   );
 });
 
-const categoryMap = computed(() => {
+const mappedCategory = computed(() => {
   return categories.value?.category.map(
     (category: {
       id: string;
@@ -474,7 +495,8 @@ const categoryMap = computed(() => {
       ...category,
       ...category.translations.find(
         (translation: { languages_id: number }) =>
-          translation.languages_id.toString() === currentTranslation.value.id
+          translation.languages_id.toString() ===
+          getLocaleObject(currentLocale.value).id
       ),
     })
   );
@@ -484,7 +506,7 @@ useServerHeadSafe({
   script: [
     {
       type: "application/ld+json",
-      children: computed(() => {
+      textContent: computed(() => {
         if (!products.value?.products) return "{}";
 
         const itemListElements = products.value?.products.map(
@@ -493,12 +515,22 @@ useServerHeadSafe({
             position: index + 1,
             item: {
               "@type": "Product",
-              name: product.title,
+              name:
+                product.translations.find(
+                  (translation: { languages_id: number }) =>
+                    translation.languages_id.toString() ===
+                    getLocaleObject(currentLocale.value).id
+                )?.title || "",
               image: img(product.image, undefined, { provider: "directus" }),
               offers: {
                 "@type": "Offer",
                 price: product.price,
-                priceCurrency: product.currency,
+                priceCurrency:
+                  product.translations.find(
+                    (translation: { languages_id: number }) =>
+                      translation.languages_id.toString() ===
+                      getLocaleObject(currentLocale.value).id
+                  )?.currency || "",
                 availability: "https://schema.org/InStock",
               },
             },

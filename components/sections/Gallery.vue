@@ -15,9 +15,10 @@
       class="w-full hidden md:grid grid-cols-4 grid-rows-2 gap-4 h-[35rem]"
     >
       <li
-        v-for="item in gallery?.galleryList"
+        v-for="(item, index) in gallery?.galleryList"
         :key="item.id"
         class="flex items-center justify-center rounded-[20px] relative before:absolute before:bg-gradient-to-t before:content-[''] before:from-slate-900 before:w-full before:h-full overflow-hidden [&:nth-child(1)]:row-span-2 [&:nth-child(3)]:col-span-2"
+        @click="handleOpenModal(index)"
       >
         <NuxtImg
           provider="directus"
@@ -34,7 +35,7 @@
       <li
         v-for="(item, index) in gallery?.galleryList"
         :key="index"
-        class="flex items-center justify-center rounded-[20px] relative before:absolute before:bg-gradient-to-t before:content-[''] before:from-slate-900 before:w-full before:h-full overflow-hidden"
+        class="flex items-center justify-center rounded-[20px] relative before:absolute before:bg-gradient-to-t before:content-[''] before:from-slate-900 before:w-full before:h-full overflow-hidden cursor-pointer"
         :class="[
           index === 1 || index === 2 ? 'max-md:col-span-2' : '',
           index === gallery?.home?.galleryList.length - 2
@@ -44,6 +45,7 @@
             ? 'max-md:col-span-3 max-md:h-[35rem]'
             : '',
         ]"
+        @click="handleOpenModal(index)"
       >
         <nuxt-img
           provider="directus"
@@ -53,14 +55,22 @@
         />
       </li>
     </ul>
+    <Modal :is-open="isOpenModal" @close="isOpenModal = false">
+      <LazyGalleryPreviewModal
+        :gallery="gallery?.galleryList"
+        :initial-image-index="selectedImageIndex"
+        @close-modal="isOpenModal = false"
+      />
+    </Modal>
   </div>
 </template>
 <script setup lang="ts">
 import { QUERY_KEYS } from "~/constants/query-keys";
 
 const { $directus } = useNuxtApp();
-const { currentTranslation } = useTranslations();
-
+const { currentLocale, getLocaleObject } = useI18n();
+const isOpenModal = ref(false);
+const selectedImageIndex = ref(0);
 const { data: galleryData } = await useAsyncData(
   QUERY_KEYS.pages.home.gallery,
   () =>
@@ -90,8 +100,14 @@ const gallery = computed(() => {
         languages_id: number;
         galleryHeadingTitle: string;
         galleryHeadingDescription: string;
-      }) => t.languages_id.toString() === currentTranslation.value.id
+      }) =>
+        t.languages_id.toString() === getLocaleObject(currentLocale.value).id
     ),
   };
 });
+
+const handleOpenModal = (index: number) => {
+  selectedImageIndex.value = index;
+  isOpenModal.value = true;
+};
 </script>

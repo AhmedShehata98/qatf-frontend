@@ -64,27 +64,29 @@
       </button>
     </div>
     <div class="mt-2 text-center">
-      <div class="font-bold text-sm md:text-base mb-1">{{ product.title }}</div>
+      <div class="font-bold text-sm md:text-base mb-1">
+        {{ product.title }}
+      </div>
       <div
         class="text-gray-500 text-xs md:text-sm mb-1 flex items-center justify-center gap-2.5"
       >
         <span class="flex items-center justify-center gap-1">
           <p class="text-primary">{{ product.price }}</p>
           <p v-if="product.currency" class="text-primary">
-            {{ currencyMap[product.currency] }}
+            {{ product.currency }}
           </p>
         </span>
-        <span v-if="product.unit">({{ unitMap[product.unit] || "--" }})</span>
+        <span v-if="product.unit">( {{ product.unit.name || "--" }} )</span>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { currencyMap, unitMap, type Product } from "@/types/product";
+import type { Product } from "@/types/product";
 
-const { isInTheCart: inCart, cart } = useCart();
-const { currentTranslation } = useTranslations();
+const { isInTheCart: inCart } = useCart();
+const { currentLocale, getLocaleObject } = useI18n();
 const props = defineProps<{
   data: Product;
 }>();
@@ -93,14 +95,23 @@ const product = computed(() => ({
   ...props.data,
   ...props.data.translations.find(
     (translation) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ),
   id: props.data.id,
+  unit: props.data.unit?.translations?.find(
+    (translation: { languages_id: number }) =>
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
+  ),
+  category: props.data.category?.translations.find(
+    (translation: { languages_id: number }) =>
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
+  ),
 }));
 
-const isInTheCart = computed(
-  () => cart.value.find((i) => i.id === props.data.id) !== undefined
-);
+const isInTheCart = computed(() => inCart(props.data));
 
 defineEmits<{
   (e: "on-add-to-cart", data: Product): void;

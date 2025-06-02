@@ -41,8 +41,7 @@
 import { QUERY_KEYS } from "~/constants/query-keys";
 
 const { $directus } = useNuxtApp();
-const { currentTranslation } = useTranslations();
-
+const { currentLocale, getLocaleObject } = useI18n();
 const { data: featuresData } = await useAsyncData(
   QUERY_KEYS.pages.home.features,
   () =>
@@ -80,7 +79,8 @@ const features = computed(() => {
           ...service,
           ...service.translations.find(
             (t: { languages_id: number; title: string; description: string }) =>
-              t.languages_id.toString() === currentTranslation.value.id
+              t.languages_id.toString() ===
+              getLocaleObject(currentLocale.value).id
           ),
         };
       }

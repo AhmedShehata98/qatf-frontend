@@ -90,11 +90,16 @@
             id="is-order-before"
             v-model="form.isOrderedBefore"
             name="is-order-before"
-            class="border border-gray-300 rounded-lg py-1 px-2"
+            class="border border-gray-300 rounded-lg py-1 px-2 ltr:py-2.5"
             @blur="touched.isOrderedBefore = true"
           >
-            <option value="false">لا</option>
-            <option value="true">نعم</option>
+            <option
+              v-for="option in cartContent.modalOrderedBeforeOptions"
+              :key="option"
+              :value="option"
+            >
+              {{ option }}
+            </option>
           </select>
           <span
             v-if="!form.isOrderedBefore && touched.isOrderedBefore"
@@ -146,7 +151,7 @@
         <span class="flex items-center justify-center gap-6">
           <p>
             {{
-              Intl.NumberFormat("ar-SA", {
+              Intl.NumberFormat(currentLocale, {
                 style: "currency",
                 currency: "SAR",
               }).format(totalPrice || 0)
@@ -207,21 +212,9 @@ const isError = ref<boolean>(false);
 const isLoading = ref<boolean>(false);
 const isSuccess = ref<boolean>(false);
 const errorMsg = ref<null | string>(null);
-const form = reactive({
-  companyName: "",
-  phone: "",
-  countryCode: "+966",
-  activity: "",
-  isOrderedBefore: false,
-});
-const touched = reactive({
-  companyName: false,
-  phone: false,
-  activity: false,
-  isOrderedBefore: false,
-});
+
 const { clearCart } = useCart();
-const { currentTranslation } = useTranslations();
+const { currentLocale, getLocaleObject } = useI18n();
 const { data } = await useAsyncData(QUERY_KEYS.pages.cartContent, () =>
   $directus.query(
     `
@@ -242,6 +235,7 @@ const { data } = await useAsyncData(QUERY_KEYS.pages.cartContent, () =>
             modalCompanyValidationMessage
             modalOrderValidationMessage
             modalActivityValidationMessage
+            modalOrderedBeforeOptions
           }
         }
       }
@@ -252,10 +246,23 @@ const cartContent = computed(() => ({
   ...data.value?.productsPricing,
   ...data.value?.productsPricing.translations.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ),
 }));
-
+const form = reactive({
+  companyName: "",
+  phone: "",
+  countryCode: "+966",
+  activity: "",
+  isOrderedBefore: cartContent.value.modalOrderedBeforeOptions?.[0],
+});
+const touched = reactive({
+  companyName: false,
+  phone: false,
+  activity: false,
+  isOrderedBefore: false,
+});
 const isValidForm = computed(() => {
   return (
     form.companyName &&
@@ -316,7 +323,7 @@ const handleSubmit = async () => {
         console.log("cart item has no id");
         return;
       }
-      const createdItem = await $fetch("/api/cart-items", {
+      await $fetch("/api/cart-items", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -333,10 +340,10 @@ const handleSubmit = async () => {
     // TODO: send email to admin and user
     resetForm();
     clearCart();
-  } catch (error: any) {
+  } catch (error: unknown) {
     isError.value = true;
     isSuccess.value = false;
-    errorMsg.value = error.message;
+    errorMsg.value = error instanceof Error ? error.message : "Unknown error";
     isLoading.value = false;
     if (import.meta.dev) {
       console.log(error);

@@ -26,7 +26,8 @@ const {
 } = useCart();
 
 const { $directus } = useNuxtApp();
-const { currentTranslation } = useTranslations();
+const { getLocaleObject, currentLocale } = useI18n();
+
 const { data: seoConfigData } = await useAsyncData(
   QUERY_KEYS.collections.globalSEO,
   () =>
@@ -54,36 +55,44 @@ const { data: seoConfigData } = await useAsyncData(
       }
   `)
 );
+
 const img = useImage();
 useServerSeoMeta({
   title: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).meta_title,
   description: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).meta_description,
   keywords: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).meta_keywords,
   robots: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).meta_robots,
   ogTitle: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).ogTitle,
   ogDescription: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).ogDescription,
   ogImage: img(
     seoConfigData.value?.seo_detail?.translations?.find(
       (translation: { languages_id: number }) =>
-        translation.languages_id.toString() === currentTranslation.value.id
+        translation.languages_id.toString() ===
+        getLocaleObject(currentLocale.value).id
     ).ogImage,
     undefined,
     {
@@ -92,15 +101,18 @@ useServerSeoMeta({
   ),
   ogType: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).ogType,
   ogUrl: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).ogUrl,
   ogSiteName: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).ogSiteName,
 });
 useServerHeadSafe({
@@ -109,19 +121,47 @@ useServerHeadSafe({
       rel: "canonical",
       href: seoConfigData.value?.seo_detail?.translations?.find(
         (translation: { languages_id: number }) =>
-          translation.languages_id.toString() === currentTranslation.value.id
+          translation.languages_id.toString() ===
+          getLocaleObject(currentLocale.value).id
       ).canonical,
+    },
+  ],
+  meta: [
+    {
+      name: "theme-color",
+      content: "#008145",
     },
   ],
 });
 useSeoMeta({
   title: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).meta_title,
   description: seoConfigData.value?.seo_detail?.translations?.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ).meta_description,
+});
+useHead({
+  title: () =>
+    seoConfigData.value?.seo_detail?.translations?.find(
+      (translation: { languages_id: number }) =>
+        translation.languages_id.toString() ===
+        getLocaleObject(currentLocale.value).id
+    ).meta_title,
+  meta: [
+    {
+      name: "description",
+      content: () =>
+        seoConfigData.value?.seo_detail?.translations?.find(
+          (translation: { languages_id: number }) =>
+            translation.languages_id.toString() ===
+            getLocaleObject(currentLocale.value).id
+        ).meta_description,
+    },
+  ],
 });
 </script>

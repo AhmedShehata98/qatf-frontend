@@ -50,7 +50,7 @@
           <template v-for="link of appFooter.websiteLinks" :key="link.id">
             <NuxtLink
               v-if="link.path && !link.path.match(/^\[.*\]$/)"
-              :to="link.path"
+              :to="pathWithLocale(link.path)"
               class="block hover:underline"
               >{{ link.title }}</NuxtLink
             >
@@ -112,7 +112,7 @@
             }}
           </p>
           <NuxtLink
-            to="/privacy-and-terms"
+            :to="pathWithLocale('/privacy-and-terms')"
             class="hover:underline mt-2 md:mt-0 max-md:w-full text-center"
             >{{ appFooter.termsOfPrivacyLabel }}</NuxtLink
           >
@@ -128,8 +128,7 @@ import { QUERY_KEYS } from "~/constants/query-keys";
 const copyRightYear = shallowRef(new Date().getFullYear());
 const { $directus } = useNuxtApp();
 const { showModal } = useShowCartModal();
-const { currentTranslation } = useTranslations();
-
+const { currentLocale, getLocaleObject, pathWithLocale } = useI18n();
 const img = useImage();
 const { data } = await useAsyncData(QUERY_KEYS.globalConfig.appFooter, () =>
   $directus.query(
@@ -172,12 +171,13 @@ const appFooter = computed(() => {
   return {
     ...data.value.appFooter,
     ...data.value.appFooter.translations.find(
-      (t) => t.id === currentTranslation.value.id
+      (t) => t.id === getLocaleObject(currentLocale.value).id
     ),
     websiteLinks: data.value.appFooter.websiteLinks.map((link) => ({
       ...link,
       ...link.translations.find(
-        (t) => t.languages_id.toString() === currentTranslation.value.id
+        (t) =>
+          t.languages_id.toString() === getLocaleObject(currentLocale.value).id
       ),
     })),
   };

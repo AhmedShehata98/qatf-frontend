@@ -25,7 +25,8 @@
             class="focus:outline-none text-white pe-3 py-1 text-sm"
           >
             <option :value="product.unit">
-              {{ unitMap[product.unit] }}
+              <!-- {{ unitMap[product.unit] }} -->
+              {{ product.unit }}
             </option>
           </select>
         </span>
@@ -77,7 +78,8 @@
       </div>
       <span class="flex items-center gap-1 max-md:justify-between">
         <p class="text-green-600 font-bold px-5 shrink-0">
-          {{ product.price }} {{ currencyMap[product.currency] }}
+          {{ product.price }} {{ product.currency }}
+          <!-- {{ product.price }} -->
         </p>
         <button
           type="button"
@@ -109,11 +111,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
 import type { CartType } from "~/types/cart";
-import { currencyMap, unitMap } from "~/types/product";
 
-const { currentTranslation } = useTranslations();
+const { currentLocale, getLocaleObject } = useI18n();
 const props = defineProps<{
   data: CartType;
 }>();
@@ -122,9 +122,13 @@ const product = computed(() => ({
   ...props.data,
   ...props.data.translations.find(
     (translation) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ),
 }));
+
+console.log(props.data);
+console.log(product.value);
 // Define emits for updating quantity or unit
 const emit = defineEmits<{
   (e: "increase-quantity", product: CartType): void;

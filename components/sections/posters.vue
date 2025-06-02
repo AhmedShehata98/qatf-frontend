@@ -74,7 +74,6 @@ import { QUERY_KEYS } from "~/constants/query-keys";
 
 const img = useImage();
 const { $directus } = useNuxtApp();
-
 const { data: posters } = await useAsyncData(
   QUERY_KEYS.pages.home.posters,
   () =>

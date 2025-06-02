@@ -129,7 +129,7 @@ import { QUERY_KEYS } from "~/constants/query-keys";
 
 const SPACIAL_WORD_INDICATOR_START = "<mark>";
 const SPACIAL_WORD_INDICATOR_END = "<mark/>";
-const { currentTranslation } = useTranslations();
+const { currentLocale, getLocaleObject } = useI18n();
 const { $directus } = useNuxtApp();
 const { data } = await useAsyncData(QUERY_KEYS.pages.aboutUs, () =>
   $directus.query(
@@ -185,17 +185,19 @@ const aboutUs = computed(() => ({
       ...item.translations.find(
         (translation: { languages_id: number }) =>
           translation.languages_id.toString() ===
-          currentTranslation.value.id.toString()
+          getLocaleObject(currentLocale.value).id
       ),
       ...item.translations.find(
         (translation) =>
-          translation.languages_id.toString() === currentTranslation.value.id
+          translation.languages_id.toString() ===
+          getLocaleObject(currentLocale.value).id
       ),
     })
   ),
   ...data?.value?.aboutUs.translations.find(
     (translation) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ),
 }));
 

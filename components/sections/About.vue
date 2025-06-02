@@ -116,8 +116,7 @@ import { QUERY_KEYS } from "~/constants/query-keys";
 
 const img = useImage();
 const { $directus } = useNuxtApp();
-const { currentTranslation } = useTranslations();
-
+const { currentLocale, getLocaleObject } = useI18n();
 const { data: aboutData } = await useAsyncData(
   QUERY_KEYS.pages.home.about,
   () =>
@@ -154,7 +153,8 @@ const about = computed(() => {
         languages_id: number;
         aboutHeadingTitle: string;
         aboutHeadingDescription: string;
-      }) => t.languages_id.toString() === currentTranslation.value.id
+      }) =>
+        t.languages_id.toString() === getLocaleObject(currentLocale.value).id
     ),
     aboutItems: aboutData.value?.home?.aboutItems.map(
       (item: {
@@ -175,7 +175,8 @@ const about = computed(() => {
         }),
         ...item.translations.find(
           (t: { languages_id: number; title: string; description: string }) =>
-            t.languages_id.toString() === currentTranslation.value.id
+            t.languages_id.toString() ===
+            getLocaleObject(currentLocale.value).id
         ),
       })
     ),

@@ -63,7 +63,7 @@ const { data: newsLetterContent } = await useAsyncData(
 `)
 );
 
-const { currentTranslation } = useTranslations();
+const { currentLocale, getLocaleObject } = useI18n();
 
 const newsletter = computed(() => {
   return {
@@ -76,7 +76,8 @@ const newsletter = computed(() => {
         newsletterFormPlaceholder: string;
         newsletterFormButtonTitle: string;
         newsletterFormButtonHref: string;
-      }) => t.languages_id.toString() === currentTranslation.value.id
+      }) =>
+        t.languages_id.toString() === getLocaleObject(currentLocale.value).id
     ),
   };
 });
