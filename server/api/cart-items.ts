@@ -1,45 +1,48 @@
 import { createDirectus, createItem, rest, withToken } from "@directus/sdk";
-
-type CreateCartItemType = {
-  cartId: number;
-  productId: number;
-  quantity: number;
-};
+import type { CreateCartItemType } from "~/types/cart";
 
 export default defineEventHandler(async (event) => {
   try {
-    const body = (await readBody(event)) as CreateCartItemType;
-    switch (event.method) {
-      case "POST":
-        const res = await createCartItem(body);
-        return {
-          statusCode: 200,
-          message: "Cart item created successfully",
-          data: res,
-        };
-      default:
-        throw createError({
-          statusCode: 405,
-          statusMessage: "Method not allowed",
+    if (event.method === "POST") {
+      const body = await readBody<CreateCartItemType>(event);
+
+      if (
+        !body.productName ||
+        !body.unitPrice ||
+        !body.total ||
+        !body.cartId ||
+        !body.productId ||
+        !body.quantity
+      ) {
+        return createError({
+          statusCode: 400,
+          statusMessage: "All fields are required",
+          message:
+            "required fields are missing [ productName, unitPrice, total, cartId, productId, quantity ]",
         });
+      }
+
+      const res = await createCartItem(body);
+      return {
+        statusCode: 200,
+        message: "Cart item created successfully",
+        data: res,
+      };
     }
-  } catch (error: any) {
-    if (error.statusCode === 405) {
-      throw error;
-    }
-    throw createError({
-      statusCode: error?.statusCode || 500,
-      statusMessage: error?.statusMessage || "Create cart item failed",
-      message: error?.message || "An unexpected error occurred",
+    return createError({
+      statusCode: 405,
+      statusMessage: "Method not allowed",
+    });
+  } catch (error) {
+    return createError({
+      statusCode: 500,
+      statusMessage: "Something went wrong",
+      message: error instanceof Error ? error.message : "Method not allowed",
     });
   }
 });
 
-async function createCartItem(cartItem: {
-  cartId: number;
-  productId: number;
-  quantity: number;
-}) {
+async function createCartItem(cartItem: CreateCartItemType) {
   try {
     const directus = createDirectus(useRuntimeConfig().public.directusUrl).with(
       rest()

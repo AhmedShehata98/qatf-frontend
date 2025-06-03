@@ -170,7 +170,7 @@
 
     <!-- product add to cart bar -->
     <div
-      class="w-full flex items-center justify-start gap-4 bg-primary fixed bottom-0 left-0 py-3 transition-transform duration-500 ease-in-out translate-y-full"
+      class="w-full flex items-center justify-start gap-4 bg-primary fixed bottom-0 z-10 isolate left-0 py-3 transition-transform duration-500 ease-in-out translate-y-full"
       :class="{
         '!translate-y-0': isOpenNotificationBar && cartOperation === 'add',
       }"
@@ -209,7 +209,7 @@
       </div>
     </div>
     <div
-      class="w-full flex items-center justify-start gap-4 bg-sky-700 fixed bottom-0 left-0 py-3 transition-transform duration-500 ease-in-out translate-y-full"
+      class="w-full flex items-center justify-start gap-4 bg-sky-700 fixed bottom-0 z-10 isolate left-0 py-3 transition-transform duration-500 ease-in-out translate-y-full"
       :class="{
         '!translate-y-0': isOpenNotificationBar && cartOperation === 'remove',
       }"

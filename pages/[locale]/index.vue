@@ -6,8 +6,8 @@
     <lazy-sections-posters />
     <lazy-sections-our-vision />
     <lazy-sections-our-goals />
-    <lazy-sections-products />
     <lazy-sections-features />
+    <lazy-sections-products />
     <lazy-sections-gallery />
     <lazy-sections-our-clients />
     <lazy-sections-newsletter />

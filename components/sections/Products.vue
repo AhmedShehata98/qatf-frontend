@@ -32,7 +32,7 @@
     </div>
     <!-- product add to cart bar -->
     <div
-      class="w-full flex items-center justify-start gap-4 bg-primary fixed bottom-0 left-0 py-3 transition-transform duration-500 ease-in-out translate-y-full"
+      class="w-full flex items-center justify-start gap-4 bg-primary fixed bottom-0 left-0 z-20 py-3 transition-transform duration-500 ease-in-out translate-y-full"
       :class="{
         '!translate-y-0': isOpenNotificationBar && cartOperation === 'add',
       }"
@@ -71,7 +71,7 @@
       </div>
     </div>
     <div
-      class="w-full flex items-center justify-start gap-4 bg-sky-700 fixed bottom-0 left-0 py-3 transition-transform duration-500 ease-in-out translate-y-full"
+      class="w-full flex items-center justify-start gap-4 bg-sky-700 fixed bottom-0 z-20 left-0 py-3 transition-transform duration-500 ease-in-out translate-y-full"
       :class="{
         '!translate-y-0': isOpenNotificationBar && cartOperation === 'remove',
       }"
@@ -156,31 +156,37 @@ const { data: productsData } = await useAsyncData(
   QUERY_KEYS.pages.home.products,
   () =>
     $directus.query(`
-  query {
-    home {
-      prodoctsFeaturedList {
-        id
-        image
+    query {
+      home {
+        prodoctsFeaturedList {
+          id
+          image
+          translations {
+            id
+            languages_id
+            title
+            currency
+          }
+          tags
+          price
+          unit {
+            translations {
+              languages_id
+              name
+              value
+            }
+          }
+        }
         translations {
           id
           languages_id
-          title
-          unit
-          currency
+          prodoctsHeadingTitle
+          prodoctsHeadingDescription
+          productCtaBtnTitle
+          productCtaBtnHref
         }
-        tags
-        price
-      }
-      translations {
-        id
-        languages_id
-        prodoctsHeadingTitle
-        prodoctsHeadingDescription
-        productCtaBtnTitle
-        productCtaBtnHref
       }
     }
-  }
 `)
 );
 

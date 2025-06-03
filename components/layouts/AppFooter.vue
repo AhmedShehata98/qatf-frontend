@@ -31,7 +31,7 @@
               :key="platform.id"
               :href="platform.platformUrl"
               :aria-label="platform.platformUrl"
-              class="hover:opacity-80 w-12"
+              class="hover:opacity-80 size-12 bg-primary/50 rounded-full"
             >
               <NuxtImg
                 provider="directus"

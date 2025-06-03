@@ -3,6 +3,15 @@
     class="relative bg-cover bg-center bg-fixed text-white py-40 min-h-dvh"
     :style="{ 'background-image': `url(${heroImage})` }"
   >
+    <!-- <video
+      src="/videos/13795287_640_360_60fps.mp4"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload
+      class="absolute inset-0 w-full h-full object-cover"
+    /> -->
     <div class="absolute inset-0 bg-black/60" />
     <div
       class="app-container relative z-10 text-center flex flex-col items-center"

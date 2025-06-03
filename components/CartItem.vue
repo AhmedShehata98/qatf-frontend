@@ -25,8 +25,7 @@
             class="focus:outline-none text-white pe-3 py-1 text-sm"
           >
             <option :value="product.unit">
-              <!-- {{ unitMap[product.unit] }} -->
-              {{ product.unit }}
+              {{ (product?.unit as any).name }}
             </option>
           </select>
         </span>

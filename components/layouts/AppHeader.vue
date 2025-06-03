@@ -4,7 +4,7 @@
       class="app-container flex items-center justify-between py-2 max-tablet:flex-row-reverse"
     >
       <!-- Logo -->
-      <nuxt-link to="/">
+      <nuxt-link :to="pathWithLocale('/')">
         <nuxt-img
           provider="directus"
           :src="appHeader.logo"

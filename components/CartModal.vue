@@ -193,7 +193,9 @@
 </template>
 <script setup lang="ts">
 import { QUERY_KEYS } from "~/constants/query-keys";
-import type { CartType } from "~/types/cart";
+import type { CartType, CreateCartItemType } from "~/types/cart";
+import type { DirectUsTranslations } from "~/types/directus";
+import type { Product } from "~/types/product";
 
 const emits = defineEmits<{
   (e: "close-modal"): void;
@@ -212,9 +214,8 @@ const isError = ref<boolean>(false);
 const isLoading = ref<boolean>(false);
 const isSuccess = ref<boolean>(false);
 const errorMsg = ref<null | string>(null);
-
+const { getLocaleObject, currentLocale } = useI18n();
 const { clearCart } = useCart();
-const { currentLocale, getLocaleObject } = useI18n();
 const { data } = await useAsyncData(QUERY_KEYS.pages.cartContent, () =>
   $directus.query(
     `
@@ -269,7 +270,8 @@ const isValidForm = computed(() => {
     form.phone &&
     form.countryCode &&
     form.activity &&
-    form.isOrderedBefore
+    form.isOrderedBefore &&
+    props.cart.length > 0
   );
 });
 
@@ -285,11 +287,58 @@ const resetForm = () => {
   touched.isOrderedBefore = false;
 };
 
+const createCartItems = async ({
+  cartId,
+  onSuccess,
+  onError,
+}: {
+  cartId: number;
+  onSuccess: (response: unknown) => void;
+  onError: (error: string) => void;
+}) => {
+  try {
+    const items: CreateCartItemType[] = props.cart.map((item) => ({
+      productId: Number(item.id),
+      cartId: cartId,
+      quantity: item.quantity,
+      productName:
+        item?.translations?.find(
+          (translation: DirectUsTranslations) =>
+            translation.languages_id.toString() ===
+            getLocaleObject(currentLocale.value).id
+        )?.title || item.translations[0].title,
+      unitPrice: item.price,
+      total: item.price * item.quantity,
+    }));
+
+    items.forEach(async (item) => {
+      await $fetch("/api/cart-items", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: item,
+        onResponse: async ({ response }) => {
+          if (!response?.ok) {
+            onError(response.statusText);
+          } else {
+            onSuccess(response._data);
+          }
+        },
+      });
+    });
+  } catch (error) {
+    if (import.meta.dev) {
+      console.error(error);
+      throw new Error("create cart items failed");
+    } else {
+      throw new Error("create cart items failed");
+    }
+  }
+};
+
 const handleSubmit = async () => {
   try {
-    const items = props.cart;
-    isLoading.value = true;
-
     // prepare cart body calculate total price and user info
     const totalPrice = calculateTotalPrice(props.cart);
     const userInfo = {
@@ -299,8 +348,7 @@ const handleSubmit = async () => {
       isOrderedBefore: form.isOrderedBefore,
     };
 
-    // create new cart to assign cart items to it
-    const cart = await $fetch<{ id: number }>("/api/cart", {
+    await $fetch<{ id: number }>("/api/cart", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -309,42 +357,34 @@ const handleSubmit = async () => {
         form: userInfo,
         totalPrice,
       },
+      onResponse: async ({ response }) => {
+        if (!response?.ok) {
+          throw new Error(`Cart creation failed, ${response?.statusText}`);
+        }
+        if (!response._data.data.data.id) {
+          throw new Error("Cart ID is not found");
+        }
+        await createCartItems({
+          cartId: response._data.data.data.id,
+          onSuccess: () => {
+            resetForm();
+            clearCart();
+            isSuccess.value = true;
+            isLoading.value = false;
+            isError.value = false;
+          },
+          onError: (error: string) => {
+            isLoading.value = false;
+            isError.value = true;
+            errorMsg.value = error || "create cart items failed";
+          },
+        });
+      },
     });
-    isLoading.value = false;
-    if (!cart) {
-      console.error("create cart failed");
-      return;
-    }
-
-    // create cart items to cart with cart id
-    items.forEach(async (item) => {
-      isLoading.value = true;
-      if (!item.id) {
-        console.error("cart item has no id");
-        return;
-      }
-      await $fetch("/api/cart-items", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: {
-          cartId: cart.id,
-          productId: item.id,
-          quantity: item.quantity,
-        },
-      });
-    });
-    isLoading.value = false;
-    isSuccess.value = true;
-    // TODO: send email to admin and user
-    resetForm();
-    clearCart();
   } catch (error: unknown) {
-    isError.value = true;
-    isSuccess.value = false;
-    errorMsg.value = error instanceof Error ? error.message : "Unknown error";
     isLoading.value = false;
+    isError.value = true;
+    errorMsg.value = error instanceof Error ? error.message : "Unknown error";
     if (import.meta.dev) {
       console.error(error);
     } else {
