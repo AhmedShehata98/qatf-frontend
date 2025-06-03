@@ -6,7 +6,7 @@
       >
         {{ gallery?.galleryHeadingTitle }}
       </p>
-      <h2 class="text-[32px] md:text-2xl font-bold text-center mb-2">
+      <h2 class="text-[32px] md:text-4xl font-bold text-center mb-2">
         {{ gallery?.galleryHeadingDescription }}
       </h2>
     </div>

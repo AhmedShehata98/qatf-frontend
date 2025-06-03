@@ -1,13 +1,16 @@
 <template>
   <section>
     <sections-hero />
-    <sections-about />
-    <sections-posters />
-    <sections-products />
-    <sections-features />
-    <sections-gallery />
-    <sections-newsletter />
-
+    <sections-why-choose-us />
+    <lazy-sections-about />
+    <lazy-sections-posters />
+    <lazy-sections-our-vision />
+    <lazy-sections-our-goals />
+    <lazy-sections-products />
+    <lazy-sections-features />
+    <lazy-sections-gallery />
+    <lazy-sections-our-clients />
+    <lazy-sections-newsletter />
     <button
       class="fixed bottom-12 right-8 size-12 flex items-center justify-center z-10 bg-secondary text-white rounded-full transition-all duration-300"
       :class="

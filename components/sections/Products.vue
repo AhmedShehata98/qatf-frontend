@@ -1,13 +1,13 @@
 <template>
   <section class="mt-16 app-container">
     <div class="container mx-auto">
-      <div class="flex flex-col items-start justify-start mb-6 w-full">
+      <div class="flex flex-col items-center justify-center mb-6 w-full">
         <p
-          class="relative text-secondary max-md:text-base text-xs font-bold mb-1 text-start before:absolute before:bottom-0 before:left-0 before:w-full before:rounded-full before:h-1/2 before:bg-gradient-to-t px-2 py-1 before:from-secondary/60 isolate"
+          class="relative text-secondary max-md:text-base text-xs font-bold mb-1 text-center before:absolute before:bottom-0 before:left-0 before:w-full before:rounded-full before:h-1/2 before:bg-gradient-to-t px-2 py-1 before:from-secondary/60 isolate"
         >
           {{ products?.prodoctsHeadingTitle }}
         </p>
-        <h2 class="text-[32px] md:text-2xl font-bold text-start mb-2">
+        <h2 class="text-[32px] md:text-4xl font-bold text-center mb-2">
           {{ products?.prodoctsHeadingDescription }}
         </h2>
       </div>
