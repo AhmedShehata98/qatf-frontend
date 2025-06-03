@@ -23,7 +23,7 @@ const useI18n = () => {
   };
 
   const getLocale = computed(() => {
-    return localeCookie.value || i18n.locales["ar-SA"].code;
+    return localeCookie.value || i18n.locales.ar.code;
   });
 
   const getIso = computed(() => {
@@ -51,7 +51,7 @@ const useI18n = () => {
       lang: getIso.value,
       dir: getDir.value as "ltr" | "rtl" | "auto",
       style:
-        getLocale.value === "ar-SA"
+        getLocale.value === "ar"
           ? "font-family: var(--font-cairo)"
           : "font-family: var(--font-inter)",
     },

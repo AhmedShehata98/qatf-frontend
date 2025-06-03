@@ -38,23 +38,23 @@ export default defineNuxtConfig({
         defaultLocale: {
           id: "1",
           name: "العربية",
-          iso: "ar",
-          code: "ar-SA",
+          code: "ar",
+          iso: "ar-SA",
           dir: "rtl",
         },
         locales: {
-          "ar-SA": {
+          ar: {
             id: "1",
             name: "العربية",
-            iso: "ar",
-            code: "ar-SA",
+            code: "ar",
+            iso: "ar-SA",
             dir: "rtl",
           },
-          "en-US": {
+          en: {
             id: "2",
             name: "English",
-            iso: "en",
-            code: "en-US",
+            code: "en",
+            iso: "en-US",
             dir: "ltr",
           },
         },
@@ -75,16 +75,23 @@ export default defineNuxtConfig({
   nitro: {
     routeRules: {
       "/": {
-        static: 24 * 60 * 60 * 1000,
+        static: 1 * 60 * 60 * 1000,
       },
       "/about-us": {
-        static: 24 * 60 * 60 * 1000,
+        static: 1 * 60 * 60 * 1000,
       },
       "/contact-us": {
-        static: 24 * 60 * 60 * 1000,
+        static: 1 * 60 * 60 * 1000,
+      },
+      "/products": {
+        // make it on-demand
+        isr: 0,
+        headers: {
+          "Cache-Control": "no-store",
+        },
       },
       "/privacy-and-terms": {
-        static: 24 * 60 * 60 * 1000,
+        static: 1 * 60 * 60 * 1000,
       },
     },
   },
