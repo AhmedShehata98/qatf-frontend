@@ -23,5 +23,3 @@ logs
 .env.*
 !.env.example
 
-#Others
-public/videos/13795287_640_360_60fps.mp4
