@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { QUERY_KEYS } from "~/constants/query-keys";
 
-const { currentTranslation } = useTranslations();
+const { getLocaleObject, currentLocale } = useI18n();
 const { $directus } = useNuxtApp();
 const { data: terms } = await useAsyncData(QUERY_KEYS.pages.privacyPolicy, () =>
   $directus.query(
@@ -41,7 +41,8 @@ const privacyAndTerms = computed(() => ({
   ...terms.value?.privacyAndTerms,
   ...terms.value?.privacyAndTerms.translations.find(
     (translation: { languages_id: number }) =>
-      translation.languages_id.toString() === currentTranslation.value.id
+      translation.languages_id.toString() ===
+      getLocaleObject(currentLocale.value).id
   ),
 }));
 const siteUrl = useNuxtApp().$config.public.siteUrl;
